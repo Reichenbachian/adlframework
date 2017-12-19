@@ -28,7 +28,7 @@ class Experiment(object):
 	validation_datasource = attr.ib(default=None)
 	verbose = attr.ib(default=1)
 	disable_tensorboard = attr.ib(default=False)
-	tb_dir = attr.ib(default='./exps/exp_'+hashlib.md5(str(random())).hexdigest())
+	tb_dir = attr.ib(default='./exps/exp_'+hashlib.md5(str.encode(str(random()))).hexdigest())
 
 
 	# Batches
@@ -68,9 +68,7 @@ class Experiment(object):
 			self.network.fit_generator(self.train_datasource,
 										   self.train_batch_steps,
 										   epochs=self.epochs,
-										   use_multiprocessing=self.multiprocessed,
 										   workers=self.num_workers,
-										   max_queue_size=self.max_queue_size,
 										   validation_data=self.validation_datasource,
 										   validation_steps=self.val_batch_steps,
 										   initial_epoch=epoch_num,

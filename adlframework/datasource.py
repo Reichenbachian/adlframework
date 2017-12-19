@@ -1,6 +1,5 @@
-from Queue import Queue
 from random import shuffle, choice
-from multiprocessing import Pool
+from multiprocessing import Pool, Queue
 import numpy as np
 import pandas as pd
 import logging
@@ -135,5 +134,9 @@ class DataSource():
 		ds1._entities = ds1._entities[:break_off]
 		return ds1, ds2
 
-
+	def __next__(self, batch_size=None):
+		'''
+		Wrapper for python 3
+		'''
+		return self.next(batch_size)
 
