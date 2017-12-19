@@ -1,15 +1,11 @@
-import random
 import numpy as np
 import pandas as pd
 
 #### DL
 from scipy.ndimage.filters import gaussian_filter1d
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import PolynomialFeatures, normalize
-from sklearn.linear_model import RANSACRegressor
 from keras.utils import to_categorical
 #### DlFramework
-from dlframework.utils import get_logger, listdir_nohidden, dict_equal
+from dlframework.utils import get_logger
 logger = get_logger()
 
 pd.options.mode.chained_assignment = None

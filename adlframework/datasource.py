@@ -1,26 +1,29 @@
-'''
-Data source
-------------
-The point of a data source is to convert a retrieval into a bunch of accessible data entities.
-
-Constructor
------------
- - 'retrieval' - the retrieval
- - 'Entity' - the entity class for which to construct entities.
-
-Attributes
------------
- - '_entities' - a list of data entities
- - '_retrieval' - The retrieval for the data source
-'''
 from Queue import Queue
 from random import shuffle, choice
 from multiprocessing import Pool
-from adlframework.datasource_union import DataSourceUnion
 import numpy as np
 import pandas as pd
+import logging
+import pdb
+import copy
+
+logger = logging.getLogger(__name__)
 
 class DataSource():
+	'''
+	The point of a data source is to convert a retrieval into a bunch of accessible data entities.
+
+	Constructor
+	-----------
+	 - 'retrieval' - the retrieval
+	 - 'Entity' - the entity class for which to construct entities.
+
+	Attributes
+	-----------
+	 - '_entities' - a list of data entities
+	 - '_retrieval' - The retrieval for the data source
+	'''
+
 	def __init__(self, retrieval, Entity, filters=[], augmentors=[],
 					processors=[], ignore_cache=False, batch_size=30, workers=1, **kwargs):
 		self._retrieval = retrieval
@@ -103,7 +106,8 @@ class DataSource():
 		# Reset entities if necessary
 		if should_reset_queue:
 			logger.log(logging.INFO, 'Looping the datasource')
-			self.reset_queue()
+			self.list_pointer = 0
+			shuffle(self._entities)
 		# Turn sample into keras readable sample
 		data, labels = zip(*batch)
 		labels = list(labels)
@@ -113,3 +117,23 @@ class DataSource():
 		data = np.array(data)
 		labels = np.array(labels)
 		return data, labels
+
+	@staticmethod
+	def split(ds1, split_percent=.5):
+		'''
+		Splits one datasource into two
+
+		Returns: datasource_1, datasource_2
+				 where len(datasource_1)/len(ds) approximately equals split_percent
+		'''
+		logger.log(logging.WARNING, 'Using split may cause datasource specific training. (For instance, overfitting on a single speaker.)')
+		break_off = int(len(ds1._entities)*split_percent)
+		shuffle(ds1._entities)
+		### To-Do: Fix below inefficiency
+		ds2 = copy.copy(ds1)
+		ds2._entities = ds1._entities[break_off:]
+		ds1._entities = ds1._entities[:break_off]
+		return ds1, ds2
+
+
+

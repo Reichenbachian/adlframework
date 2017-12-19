@@ -1,23 +1,29 @@
-import keras
-import tensorflow as tf
-from keras import backend as K
-from keras import regularizers
 from keras.models import Sequential
 from keras.layers import *
-from keras import regularizers as reg
 from adlframework.nets.net import Net
 import attr
 
-@attr.s
-class medium_model(Net):
-	target_shape = attr.ib()
-	input_shape = attr.ib()
-	transfer = attr.ib(default=False)
-	PADDING = attr.ib(default='valid')
-	softmax = attr.ib(default=False)
 
+class mnist_test(Net):
+	@Net.build_model_wrapper
 	def build_model(self):
-		print "Input shape prior to processing via 1st conv layer: ", self.input_shape
+		model = Sequential()
+		model.add(Conv2D(32, kernel_size=(3, 3),
+							padding=self.PADDING,
+							activation='relu',
+							input_shape=self.input_shape))
+		model.add(Conv2D(64, (3, 3), activation='relu'))
+		model.add(MaxPooling2D(pool_size=(2, 2)))
+		model.add(Dropout(0.25))
+		model.add(Flatten())
+		model.add(Dense(128, activation='relu'))
+		model.add(Dropout(0.5))
+		model.add(Dense(self.target_shape, activation='softmax'))
+		return model
+
+class medium_model(Net):
+	@Net.build_model_wrapper
+	def build_model(self):
 		model = Sequential()
 		model.add(Conv2D(32, (3, 3), padding=self.PADDING,
 		                 input_shape=self.input_shape))
@@ -39,6 +45,4 @@ class medium_model(Net):
 		model.add(Activation('relu'))
 		model.add(Dropout(0.5))
 		model.add(Dense(self.target_shape))
-		if self.softmax:
-			model.add(Activation('softmax'))
 		return model

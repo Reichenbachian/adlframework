@@ -1,8 +1,6 @@
 from .retrieval import Retrieval
 from sklearn.datasets import fetch_mldata
 import logging
-import os
-import pdb
 import pandas as pd
 import numpy as np
 
