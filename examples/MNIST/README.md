@@ -1,0 +1,1 @@
+This script trains a basic classifier on a simple network.
