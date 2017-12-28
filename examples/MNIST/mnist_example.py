@@ -36,11 +36,13 @@ callbacks = []
 ### Create and run experiment
 exp = Experiment(train_datasource=train_ds,
 					validation_datasource=val_ds,
+					test_datasource=test_ds,
 					network=net,
 					metrics=['mae', 'acc'],
 					loss=categorical_crossentropy,
 					optimizer=Adadelta(),
 					label_names=list(range(10)),
 					callbacks=callbacks,
+					workers=3,
 					epochs=10)
 exp.run()

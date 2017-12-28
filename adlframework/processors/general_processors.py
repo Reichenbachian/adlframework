@@ -3,6 +3,7 @@ import pandas as pd
 from scipy.ndimage.filters import gaussian_filter1d
 from keras.utils import to_categorical
 import logging
+import pdb
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,12 @@ pd.options.mode.chained_assignment = None
 #########################
 ### Label Processors  ###
 #########################
+def pdb_trace(sample, targets=[], reverse=None):
+    '''
+    Interupts program at controller location for debugging purposes
+    '''
+    pdb.set_trace()
+
 def map_labels(sample, targets=[], reverse=None):
     '''
     Maps a pandas label to an array.

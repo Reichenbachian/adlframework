@@ -23,19 +23,15 @@ class DataSource():
 	 - '_retrieval' - The retrieval for the data source
 	'''
 
-	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, workers=1, timeout=None,
+	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, timeout=None,
 					prefilters=[], **kwargs):
 		self._retrieval = retrieval
 		self.controllers = controllers
 		self.prefilters = prefilters
 		self._entities = []
-		self.queue = Queue()
 		self.batch_size = batch_size
 		self.list_pointer = 0
-		self.multiprocessed = workers > 1
 		self.timeout = timeout
-		if self.multiprocessed:
-			self.pool = Pool(processes=workers)
 		if not ignore_cache and retrieval.is_cached(): # Read from cache
 			self._entities = self._retrieval.load_from_cache()
 		else: # create cache otherwise
@@ -84,26 +80,21 @@ class DataSource():
 		batch_size = batch_size if batch_size != None else self.batch_size
 		should_reset_queue = False
 		batch = []
-
-		# Load batches
-		if self.multiprocessed: # If multiprocessed
-			raise NotImplemented("Multiprocessing not implemented")
-		else: # If linear
-			while len(batch) < batch_size: # Create a batch
-				entity = self._entities[self.list_pointer] # Grab next entity
-				try:
-					sample = entity.get_sample()
-					sample = self.process_sample(sample)
-					if sample: # Only add to batch if it passes all per sample filters
-						# To-Do: Somehow prevent redundant rejections.
-						batch.append(sample)
-				except:
-					logger.log(logging.WARNING, 'Controller or sample Failure')
-				self.list_pointer += 1
-				if self.list_pointer >= len(self._entities): # Loop batch if necessary(while randomize before next iteration)
-					self.list_pointer = 0
-					logger.log(logging.INFO, 'Looped the datasource')
-					should_reset_queue = True
+		while len(batch) < batch_size: # Create a batch
+			entity = self._entities[self.list_pointer] # Grab next entity
+			try:
+				sample = entity.get_sample()
+				sample = self.process_sample(sample)
+				if sample: # Only add to batch if it passes all per sample filters
+					# To-Do: Somehow prevent redundant rejections.
+					batch.append(sample)
+			except:
+				logger.log(logging.WARNING, 'Controller or sample Failure')
+			self.list_pointer += 1
+			if self.list_pointer >= len(self._entities): # Loop batch if necessary(while randomize before next iteration)
+				self.list_pointer = 0
+				logger.log(logging.INFO, 'Looped the datasource')
+				should_reset_queue = True
 
 
 		# Reset entities if necessary

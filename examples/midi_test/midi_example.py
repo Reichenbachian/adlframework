@@ -9,7 +9,7 @@ from keras.optimizers import Adadelta
 from keras.losses import MAE
 from adlframework.experiment import Experiment
 ### Controllers
-from adlframework.processors.general_processors import crop, reshape
+from adlframework.processors.general_processors import crop, reshape, pdb_trace
 from adlframework.processors.lstm_processors import crop_and_label
 from adlframework.processors.midi_processors import midi_to_np
 from adlframework.filters.general_filters import min_array_shape
@@ -21,7 +21,8 @@ controllers = [ #partial(threshold_label, labelnames="num_instruments", threshol
 			  partial(min_array_shape, min_shape=(105, 4)),
 			  partial(crop, shape=(105, 4)),
 			  partial(crop_and_label, num_rows=5),
-			  partial(reshape, reshape_label=True, out_shape=(20,))
+			  partial(reshape, reshape_label=True, out_shape=(20,)),
+			  pdb_trace
 			 ]
 
 ### Load Data

@@ -24,11 +24,13 @@ class Experiment(object):
 	callbacks = attr.ib(default=[])
 	loss = attr.ib(default=None)
 	metrics = attr.ib(default=[])
-	num_workers = attr.ib(default=1)
+	workers = attr.ib(default=1)
 	max_queue_size = attr.ib(default=10)
 	validation_datasource = attr.ib(default=None)
+	test_datasource = attr.ib(default=None)
 	verbose = attr.ib(default=1)
 	disable_tensorboard = attr.ib(default=False)
+	use_multiprocessing = attr.ib(default=False)
 	tb_dir = attr.ib(default='./exps/exp_'+hashlib.md5(str.encode(str(random()))).hexdigest())
 
 
@@ -57,22 +59,25 @@ class Experiment(object):
 		for callback in self.callbacks: ### Give all callbacks access to the experiment object
 			callback.exp = self
 
-
-		self.multiprocessed = self.num_workers > 1
 		self.compile_network()
 		if not self.disable_tensorboard:
 			self.callbacks.append(TensorBoard(log_dir=self.tb_dir, histogram_freq=0,  
 										write_graph=True, write_images=True))
-		epoch_num = 0
-		while (epoch_num <= self.epochs):
-			### Run a minibatch
-			self.network.fit_generator(self.train_datasource,
-										   self.train_batch_steps,
-										   epochs=self.epochs,
-										   workers=self.num_workers,
-										   validation_data=self.validation_datasource,
-										   validation_steps=self.val_batch_steps,
-										   initial_epoch=epoch_num,
-										   callbacks=self.callbacks
-									   )
-			epoch_num += 1
+		if self.use_multiprocessing == None:
+			self.use_multiprocessing = self.workers > 1
+		### Run a minibatch
+		self.network.fit_generator(self.train_datasource,
+									   self.train_batch_steps,
+									   epochs=self.epochs,
+									   use_multiprocessing=self.use_multiprocessing,
+									   workers=self.workers,
+									   validation_data=self.validation_datasource,
+									   validation_steps=self.val_batch_steps,
+									   callbacks=self.callbacks
+								   )
+		test_out = self.network.test_on_batch(*self.train_datasource.next())
+		metrics = self.network.metrics
+		metrics.insert(0, 'loss')
+		print("Test metrics: ", zip(metrics, test_out))
+		# if self.test_datasource is not None:
+		# 	self.network.
