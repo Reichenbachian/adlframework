@@ -1,22 +1,16 @@
 from keras.models import Sequential
-from keras.layers import *
+from keras.layers import Dense, LSTM
 from adlframework.nets.net import Net
-import attr
 
 
-class mnist_test(Net):
+class midi_test(Net):
 	@Net.build_model_wrapper
 	def build_model(self):
 		model = Sequential()
-		model.add(Conv2D(32, kernel_size=(3, 3),
-							padding=self.PADDING,
-							activation='relu',
-							input_shape=self.input_shape))
-		model.add(Conv2D(64, (3, 3), activation='relu'))
-		model.add(MaxPooling2D(pool_size=(2, 2)))
-		model.add(Dropout(0.25))
-		model.add(Flatten())
-		model.add(Dense(128, activation='relu'))
-		model.add(Dropout(0.5))
-		model.add(Dense(self.target_shape, activation='softmax'))
+		model.add(LSTM(120, activation='relu',
+							input_shape=self.input_shape,
+							return_sequences=True))
+		model.add(LSTM(120, activation='relu', return_sequences=True))
+		model.add(LSTM(120, activation='relu'))
+		model.add(Dense(self.target_shape))
 		return model

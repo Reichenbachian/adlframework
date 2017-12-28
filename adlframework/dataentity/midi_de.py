@@ -1,8 +1,6 @@
 from adlframework._dataentity import DataEntity
 from madmom.utils.midi import MIDIFile
 import logging
-import pdb
-import attr
 
 logger = logging.getLogger(__name__)
 

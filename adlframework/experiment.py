@@ -8,6 +8,7 @@ import logging
 from keras.callbacks import TensorBoard
 import hashlib
 from random import random
+import pdb
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +17,8 @@ logger = logging.getLogger(__name__)
 class Experiment(object):
 	train_datasource = attr.ib()
 	network = attr.ib()
-	label_names = attr.ib() ## To-Do: Make these unnecessary.
-
+	
+	label_names = attr.ib(default=None)
 	epochs = attr.ib(default=100)
 	optimizer = attr.ib(default=None)
 	callbacks = attr.ib(default=[])

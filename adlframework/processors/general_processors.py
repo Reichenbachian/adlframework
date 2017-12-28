@@ -59,13 +59,16 @@ def crop(sample, shape):
 #########################
 #### Data Processors  ###
 #########################
-def reshape(sample, out_shape=None):
+def reshape(sample, out_shape=None, reshape_label=False):
     """
     Reshapes the input array to a desired output shape.
     """
     assert out_shape != None, 'Please specify an out_shape while using reshape'
     data, label = sample
-    data = data.reshape(out_shape)
+    if reshape_label:
+        label = label.reshape(out_shape)
+    else:
+        data = data.reshape(out_shape)
     return data, label
 
 def remove_outliers(sample, threshold=3):

@@ -1,9 +1,8 @@
-from random import shuffle, choice
+import pdb
+from random import shuffle
 from multiprocessing import Pool, Queue
 import numpy as np
-import pandas as pd
 import logging
-import pdb
 import copy
 
 logger = logging.getLogger(__name__)
@@ -24,13 +23,11 @@ class DataSource():
 	 - '_retrieval' - The retrieval for the data source
 	'''
 
-	def __init__(self, retrieval, Entity, filters=[], augmentors=[],
-					processors=[], ignore_cache=False, batch_size=30, workers=1, timeout=None,
+	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, workers=1, timeout=None,
 					prefilters=[], **kwargs):
 		self._retrieval = retrieval
-		self.filters = filters
-		self.augmentors = augmentors
-		self.processors = processors
+		self.controllers = controllers
+		self.prefilters = prefilters
 		self._entities = []
 		self.queue = Queue()
 		self.batch_size = batch_size
@@ -53,9 +50,8 @@ class DataSource():
 
 		shuffle(self._entities)
 		assert len(self._entities) > 0, "Cannot initialize an empty data source"
-		assert type(self.augmentors) is list, "Please make augmentors a list in all data sources"
-		assert type(self.filters) is list, "Please make filters a list in all data sources"
-		assert type(self.processors) is list, "Please make processors a list in all data sources"
+		assert type(self.controllers) is list, "Please make augmentors a list in all data sources"
+		assert type(self.prefilters) is list, "Please make augmentors a list in all data sources"
 
 	def should_reset_queue(self):
 		shuffle(self._entities)
@@ -68,15 +64,12 @@ class DataSource():
 			For instance, augmentors may be [aug1, aug2, [aug3, aug4]] and it may choose aug1, aug2, or [aug3, aug4].
 		A sample goes through every processor.
 		'''
-		### Augment
-		if len(self.augmentors) > 0:
-			chosen_augmentor = choice(augmentors)
-			chosen_augmentor_list = [augmentor] if type(augmentor) is not list else augmentor
-			for augmentor in chosen_augmentor_list:
-				sample = augmentor(sample)
 		### Processor
-		for processor in self.processors:
-			sample = processor(sample)
+		for controller in self.controllers:
+			tmp = controller(sample)
+			sample = sample if tmp == True else tmp
+			if sample == False:
+				return sample
 		return sample
 
 	def next(self, batch_size=None):
@@ -98,11 +91,14 @@ class DataSource():
 		else: # If linear
 			while len(batch) < batch_size: # Create a batch
 				entity = self._entities[self.list_pointer] # Grab next entity
-				sample = entity.get_sample()
-				if all([f(sample) for f in self.filters]): # Only add to batch if it passes all per sample filters
-					# To-Do: Somehow prevent redundant rejections.
+				try:
+					sample = entity.get_sample()
 					sample = self.process_sample(sample)
-					batch.append(sample)
+					if sample: # Only add to batch if it passes all per sample filters
+						# To-Do: Somehow prevent redundant rejections.
+						batch.append(sample)
+				except:
+					logger.log(logging.WARNING, 'Controller or sample Failure')
 				self.list_pointer += 1
 				if self.list_pointer >= len(self._entities): # Loop batch if necessary(while randomize before next iteration)
 					self.list_pointer = 0

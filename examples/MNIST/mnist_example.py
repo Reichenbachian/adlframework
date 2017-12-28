@@ -4,7 +4,7 @@ from adlframework.retrievals.MNIST import MNIST_retrieval
 from adlframework.datasource import DataSource
 from adlframework.dataentity.image_de import ImageFileDataEntity
 ### Model
-from adlframework.nets.image_nets import mnist_test
+from mnist_test import mnist_test
 from keras.optimizers import Adadelta
 from keras.losses import categorical_crossentropy
 from adlframework.experiment import Experiment
@@ -17,12 +17,12 @@ import pdb
 
 
 ### Controllers
-processors = [partial(reshape, out_shape=(28, 28, 1)),
+controllers = [partial(reshape, out_shape=(28, 28, 1)),
 			  partial(make_categorical, num_classes=10)]
 
 ### Load Data
 mnist_retrieval = MNIST_retrieval()
-mnist_ds = DataSource(mnist_retrieval, ImageFileDataEntity, processors=processors)
+mnist_ds = DataSource(mnist_retrieval, ImageFileDataEntity, controllers=controllers)
 
 train_ds, temp = DataSource.split(mnist_ds, split_percent=.6)
 val_ds, test_ds = DataSource.split(temp, split_percent=.6)
@@ -42,5 +42,5 @@ exp = Experiment(train_datasource=train_ds,
 					optimizer=Adadelta(),
 					label_names=list(range(10)),
 					callbacks=callbacks,
-					epochs=1)
+					epochs=10)
 exp.run()
