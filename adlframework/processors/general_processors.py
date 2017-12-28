@@ -47,6 +47,14 @@ def threshold_labels(sample, threshold=.5, targets=None):
         label[i] = int(label[i] > threshold)
     return data, label
 
+def crop(sample, shape):
+    '''
+    To-Do: Make arbitrary dimensional
+    '''
+    data, label = sample
+    padded = np.zeros(shape)
+    padded[:data.shape[0],:data.shape[1]] = data[:padded.shape[0],:padded.shape[1]]
+    return padded, label
 
 #########################
 #### Data Processors  ###

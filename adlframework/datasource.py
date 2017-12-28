@@ -16,6 +16,7 @@ class DataSource():
 	-----------
 	 - 'retrieval' - the retrieval
 	 - 'Entity' - the entity class for which to construct entities.
+	 - 'timeout' - timeout is used on a per sample basis. Not per batch.
 
 	Attributes
 	-----------
@@ -24,7 +25,8 @@ class DataSource():
 	'''
 
 	def __init__(self, retrieval, Entity, filters=[], augmentors=[],
-					processors=[], ignore_cache=False, batch_size=30, workers=1, **kwargs):
+					processors=[], ignore_cache=False, batch_size=30, workers=1, timeout=None,
+					prefilters=[], **kwargs):
 		self._retrieval = retrieval
 		self.filters = filters
 		self.augmentors = augmentors
@@ -34,6 +36,7 @@ class DataSource():
 		self.batch_size = batch_size
 		self.list_pointer = 0
 		self.multiprocessed = workers > 1
+		self.timeout = timeout
 		if self.multiprocessed:
 			self.pool = Pool(processes=workers)
 		if not ignore_cache and retrieval.is_cached(): # Read from cache
@@ -42,9 +45,12 @@ class DataSource():
 			for id_ in retrieval.list():
 				self._entities.append(Entity(id_, retrieval, **kwargs))
 			retrieval.cache()
-		##### Prefilter!
-		##### This is the point where all prefiltering based on entity occurs.
-		##### To-Do: write this
+
+		### Prefilter
+		# logger.log(logging.INFO, 'Prefiltering entities')
+		# for entity in self._entities:
+		# 	if all()
+
 		shuffle(self._entities)
 		assert len(self._entities) > 0, "Cannot initialize an empty data source"
 		assert type(self.augmentors) is list, "Please make augmentors a list in all data sources"
@@ -69,9 +75,8 @@ class DataSource():
 			for augmentor in chosen_augmentor_list:
 				sample = augmentor(sample)
 		### Processor
-		if len(self.processors) > 0:
-			for processor in self.processors:
-				sample = processor(sample)
+		for processor in self.processors:
+			sample = processor(sample)
 		return sample
 
 	def next(self, batch_size=None):
@@ -86,33 +91,34 @@ class DataSource():
 		batch_size = batch_size if batch_size != None else self.batch_size
 		should_reset_queue = False
 		batch = []
+
 		# Load batches
-		for i in range(batch_size): # Create a batch
-			entity = self._entities[self.list_pointer] # Grab next entity
-			sample = entity.get_sample()
-			if all([f(sample) for f in self.filters]): # Only add to batch if it passes all per sample filters
-				batch.append(sample)
-			self.list_pointer += 1
-			if self.list_pointer >= len(self._entities): # Loop batch if necessary(while randomize before next iteration)
-				self.list_pointer = 0
-				should_reset_queue = True
-		# Process batches
-		if self.multiprocessed:
-			self.pool.map(self.process_sample, batch)
-			raise NotImplemented("multiprocessing not implemented")
-		else:
-			batch = map(self.process_sample, batch)
+		if self.multiprocessed: # If multiprocessed
+			raise NotImplemented("Multiprocessing not implemented")
+		else: # If linear
+			while len(batch) < batch_size: # Create a batch
+				entity = self._entities[self.list_pointer] # Grab next entity
+				sample = entity.get_sample()
+				if all([f(sample) for f in self.filters]): # Only add to batch if it passes all per sample filters
+					# To-Do: Somehow prevent redundant rejections.
+					sample = self.process_sample(sample)
+					batch.append(sample)
+				self.list_pointer += 1
+				if self.list_pointer >= len(self._entities): # Loop batch if necessary(while randomize before next iteration)
+					self.list_pointer = 0
+					logger.log(logging.INFO, 'Looped the datasource')
+					should_reset_queue = True
+
+
 		# Reset entities if necessary
 		if should_reset_queue:
-			logger.log(logging.INFO, 'Looping the datasource')
+			logger.log(logging.INFO, 'Shuffling the datasource')
 			self.list_pointer = 0
 			shuffle(self._entities)
+
 		# Turn sample into keras readable sample
 		data, labels = zip(*batch)
 		labels = list(labels)
-		if type(labels[0]) is pd.Series:
-			for i in range(len(labels)):
-				labels[i] = labels[i].tolist()
 		data = np.array(data)
 		labels = np.array(labels)
 		return data, labels
