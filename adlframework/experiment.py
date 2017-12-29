@@ -35,8 +35,8 @@ class Experiment(object):
 
 
 	# Batches
-	train_batch_steps = attr.ib(default=100)
-	val_batch_steps = attr.ib(default=100)
+	train_batch_steps = attr.ib(default=30)
+	val_batch_steps = attr.ib(default=30)
 
 	def compile_network(self):
 		if self.loss == None:

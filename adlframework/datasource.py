@@ -4,6 +4,7 @@ from multiprocessing import Pool, Queue
 import numpy as np
 import logging
 import copy
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +81,7 @@ class DataSource():
 		batch_size = batch_size if batch_size != None else self.batch_size
 		should_reset_queue = False
 		batch = []
+		# pbar = tqdm(total=batch_size, leave=False)
 		while len(batch) < batch_size: # Create a batch
 			entity = self._entities[self.list_pointer] # Grab next entity
 			try:
@@ -88,14 +90,16 @@ class DataSource():
 				if sample: # Only add to batch if it passes all per sample filters
 					# To-Do: Somehow prevent redundant rejections.
 					batch.append(sample)
-			except:
+					# pbar.update()
+			except Exception as e:
+				print(e)
 				logger.log(logging.WARNING, 'Controller or sample Failure')
 			self.list_pointer += 1
 			if self.list_pointer >= len(self._entities): # Loop batch if necessary(while randomize before next iteration)
 				self.list_pointer = 0
 				logger.log(logging.INFO, 'Looped the datasource')
 				should_reset_queue = True
-
+		# pbar.clear()
 
 		# Reset entities if necessary
 		if should_reset_queue:
