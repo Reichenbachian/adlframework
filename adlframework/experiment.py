@@ -5,39 +5,15 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import attr
 import logging
-from keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard, LambdaCallback
 import hashlib
 from random import random
 import pdb
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
-
-@attr.s
-class Experiment(object):
-	train_datasource = attr.ib()
-	network = attr.ib()
-	
-	label_names = attr.ib(default=None)
-	epochs = attr.ib(default=100)
-	optimizer = attr.ib(default=None)
-	callbacks = attr.ib(default=[])
-	loss = attr.ib(default=None)
-	metrics = attr.ib(default=[])
-	workers = attr.ib(default=1)
-	max_queue_size = attr.ib(default=10)
-	validation_datasource = attr.ib(default=None)
-	test_datasource = attr.ib(default=None)
-	verbose = attr.ib(default=1)
-	disable_tensorboard = attr.ib(default=False)
-	use_multiprocessing = attr.ib(default=False)
-	tb_dir = attr.ib(default='./exps/exp_'+hashlib.md5(str.encode(str(random()))).hexdigest())
-
-
-	# Batches
-	train_batch_steps = attr.ib(default=30)
-	val_batch_steps = attr.ib(default=30)
-
+class __Experiment__(object):
 	def compile_network(self):
 		if self.loss == None:
 			logger.log(
@@ -48,24 +24,59 @@ class Experiment(object):
 				logging.WARN, 'No optimizer is defined. Will default to rmsprop.')
 			self.optimizer = 'rmsprop'
 		self.network = self.network.build_model()
+		assert self.network != None, 'Make sure to return model in build_model construction'
 		self.network.compile(optimizer=self.optimizer,
 							 loss=self.loss,
 							 metrics=self.metrics)
 		logger.log(logging.INFO, 'Compiled network.')
 
+@attr.s
+class SimpleExperiment(__Experiment__):
+	train_datasource = attr.ib()
+	network = attr.ib()
+	
+	epochs = attr.ib(default=100)
+	optimizer = attr.ib(default=None)
+	callbacks = attr.ib(default=[])
+	metrics = attr.ib(default=[])
+	loss = attr.ib(default=None)
+	label_names = attr.ib(default=None)
+	max_queue_size = attr.ib(default=10)
+	workers = attr.ib(default=1)
+	verbose = attr.ib(default=1)
+	disable_tensorboard = attr.ib(default=False)
+	use_multiprocessing = attr.ib(default=False)
+	validation_datasource = attr.ib(default=None)
+	test_datasource = attr.ib(default=None)
+	tb_dir = attr.ib(default='./exps/exp_'+hashlib.md5(str.encode(str(random()))).hexdigest())
+
+
+	# Batches
+	train_batch_steps = attr.ib(default=30)
+	val_batch_steps = attr.ib(default=30)
+
 	def run(self):
+		#### Create output folder
 		if not os.path.exists(self.tb_dir):
 			os.makedirs(self.tb_dir)
-		for callback in self.callbacks: ### Give all callbacks access to the experiment object
+
+		### Give all callbacks access to the experiment object
+		for callback in self.callbacks:
 			callback.exp = self
 
+		### Compile the network
 		self.compile_network()
+		
+		### Enable tensorflow callback by default
 		if not self.disable_tensorboard:
 			self.callbacks.append(TensorBoard(log_dir=self.tb_dir, histogram_freq=0,  
 										write_graph=True, write_images=True))
+
+		### Create mutliprocessing constant if not already existent
 		if self.use_multiprocessing == None:
 			self.use_multiprocessing = self.workers > 1
-		### Run a minibatch
+
+		### Train
 		self.network.fit_generator(self.train_datasource,
 									   self.train_batch_steps,
 									   epochs=self.epochs,
@@ -75,9 +86,41 @@ class Experiment(object):
 									   validation_steps=self.val_batch_steps,
 									   callbacks=self.callbacks
 								   )
-		test_out = self.network.test_on_batch(*self.train_datasource.next())
-		metrics = self.network.metrics
-		metrics.insert(0, 'loss')
-		print("Test metrics: ", zip(metrics, test_out))
-		# if self.test_datasource is not None:
-		# 	self.network.
+
+		### Test network on test batch
+		if self.train_datasource is not None:
+			test_out = self.network.test_on_batch(*self.train_datasource.next())
+			metrics = self.network.metrics
+			metrics.insert(0, 'loss')
+			print("Test metrics: ", zip(metrics, test_out))
+
+@attr.s
+class AdvancedExperiment(__Experiment__):
+	epoch = attr.ib()
+	network = attr.ib()
+
+	epochs = attr.ib(default=100)
+	loss = attr.ib(default=None)
+	metrics = attr.ib(default=None)
+	optimizer = attr.ib(default=None)
+	callbacks = attr.ib(default=[])
+	should_compile_network = attr.ib(default=False)
+	tb_dir = attr.ib(default='./exps/exp_'+hashlib.md5(str.encode(str(random()))).hexdigest())
+
+	def run(self):
+		#### Create output folder
+		if not os.path.exists(self.tb_dir):
+			os.makedirs(self.tb_dir)
+
+		### Give all callbacks access to the experiment object
+		for callback in self.callbacks:
+			callback.exp = self
+
+		### Compile the network
+		self.compile_network()
+		
+		for epoch in tqdm(range(self.epochs)):
+			info_dict = self.epoch()
+			for callback in self.callbacks:
+				callback(info_dict)
+

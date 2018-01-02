@@ -57,3 +57,16 @@ def a_batch_update(network, **kwargs):
 ```
 
 Inside **kwargs are the network, batch... To-Do: Finish implementing batch-updates.
+
+
+## Experiment Object
+There are two types of experiment. Each represents an instance of an experiment and has the following methods.
+
+ - `run()`: used to start experiment
+ - `compile_network()`: used to compile the network if not already compiled.
+
+ ### Simple Experiment
+ To-Do: Write documentation
+
+### Advanced Experiment
+An advanced recordinig takes in an epoch method. It will run it for the specified number of epochs

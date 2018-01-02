@@ -18,7 +18,7 @@ setup(name='adlframework',
               "adlframework.nets",
               "adlframework.processors",
               "adlframework.callbacks",
-              "adlframework.filters"
+              "adlframework.filters",
 					],
       install_requires=reqs,
      )

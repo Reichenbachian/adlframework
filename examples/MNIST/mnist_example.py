@@ -7,7 +7,7 @@ from adlframework.dataentity.image_de import ImageFileDataEntity
 from mnist_test import mnist_test
 from keras.optimizers import Adadelta
 from keras.losses import categorical_crossentropy
-from adlframework.experiment import Experiment
+from adlframework.experiment import SimpleExperiment
 ### Controllers
 from adlframework.processors.general_processors import reshape, make_categorical
 ### Callbacks
@@ -17,7 +17,7 @@ import pdb
 
 
 ### Controllers
-controllers = [partial(reshape, out_shape=(28, 28, 1)),
+controllers = [partial(reshape, shape=(28, 28, 1)),
 			  partial(make_categorical, num_classes=10)]
 
 ### Load Data
@@ -34,7 +34,7 @@ net = mnist_test(input_shape=(28, 28, 1), target_shape=10)
 callbacks = []
 
 ### Create and run experiment
-exp = Experiment(train_datasource=train_ds,
+exp = SimpleExperiment(train_datasource=train_ds,
 					validation_datasource=val_ds,
 					test_datasource=test_ds,
 					network=net,
