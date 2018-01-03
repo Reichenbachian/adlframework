@@ -4,7 +4,7 @@ from adlframework.retrievals.MNIST import MNIST_retrieval
 from adlframework.datasource import DataSource
 from adlframework.dataentity.image_de import ImageFileDataEntity
 ### Model
-from mnist_test import mnist_test
+from mnist_classification_network import mnist_net
 from keras.optimizers import Adadelta
 from keras.losses import categorical_crossentropy
 from adlframework.experiment import SimpleExperiment
@@ -28,7 +28,7 @@ train_ds, temp = DataSource.split(mnist_ds, split_percent=.6)
 val_ds, test_ds = DataSource.split(temp, split_percent=.6)
 
 ### Load network
-net = mnist_test(input_shape=(28, 28, 1), target_shape=10)
+net = mnist_net(input_shape=(28, 28, 1), target_shape=10)
 
 ### Callbacks
 callbacks = []
