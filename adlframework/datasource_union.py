@@ -1,8 +1,11 @@
 '''
 Represents the conglomeration of multiple data sources
+union = ds1 + ds2
+union = ds1 + different_union
 '''
 import logging
 import math
+import pdb
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +17,7 @@ class DataSourceUnion():
 		'''
 		self.datasources = datasources
 		self.batch_sizes = [x.batch_size for x in self.datasources]
-		self.batch_size = sum(self.batch_size) # batch size of conglomerate is the sum of all its subsidiaries
+		self.batch_size = sum(self.batch_sizes) # batch size of union is the sum of all its subsidiaries
 
 	def next(self, percentages=None):
 		'''
@@ -32,9 +35,14 @@ class DataSourceUnion():
 				batch_sizes = [math.ceil(p*self.batch_size) for p in percentages]
 			else:
 				batch_sizes = self.batch_sizes
-			batch = []
+			batch_X = []
+			batch_y = []
 			for i in range(len(self.datasources)):
 				bs = batch_sizes[i]
 				ds = self.datasources[i]
-				batch.extend(ds.next(bs)) # Extend batch with content.
-			yield batch
+				batch = ds.next(bs)
+				batch_X.extend(batch[0])
+				batch_y.extend(batch[1])
+				pdb.set_trace()
+			return batch_X, batch_y
+

@@ -5,6 +5,7 @@ import numpy as np
 import logging
 import copy
 from tqdm import tqdm
+from datasource_union import DataSourceUnion
 
 logger = logging.getLogger(__name__)
 
@@ -141,3 +142,15 @@ class DataSource():
 		'''
 		return self.next(batch_size)
 
+	def __add__(self, other_dsa):
+		"""
+		Combines two datasource objects while maintaining percentages.
+		"""
+		if isinstance(other_dsa, DataSource):
+			return DataSourceUnion([self, other_dsa])
+		elif isinstance(other_dsa, DataSourceUnion):
+			dss = other_dsa.datasources
+			dss.extend(self)
+			return DataSourceUnion(dss)
+		else:
+			raise Exception("Can only combine DataSource or DataSourceUnion objects!")
