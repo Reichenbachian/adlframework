@@ -2,7 +2,7 @@ import numpy as np
 from imgaug import augmenters as iaa
 
 
-def imgaug_augment(sample, seq):
+def imgaug_augment(sample, sequence):
 	"""
 	Wrapper around the imgaug library. An example sequence might be similar to as follows.
 	```
@@ -20,4 +20,4 @@ def imgaug_augment(sample, seq):
 	```
 	"""
 	data, label = sample
-	return seq.augment_image(data), label
+	return sequence.augment_image(data), label
