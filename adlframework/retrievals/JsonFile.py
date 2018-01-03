@@ -14,9 +14,9 @@ class JsonFile(Retrieval):
 	Col1, Col2, Col3, Label1, Col4, Label2
 	Returns a numpy array
 	'''
+	_return_type = "np array"
 	def __init__(self, fp, data_columns, label_columns):
 		super(JsonFile, self).__init__()
-		self._return_type = "np array"
 		self.df = pd.read_json(fp).reset_index()
 		self.data_columns = data_columns
 		self.label_columns = label_columns
