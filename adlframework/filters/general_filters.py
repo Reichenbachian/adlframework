@@ -13,7 +13,7 @@ def min_array_shape(sample, min_shape=None):
 
 def ignore_label(sample, labelnames):
     """ Reject samples for which the value for any of labelnames is 1, accept otherwise"""
-    return threshold_label(sample, labelnames, 1)
+    return threshold_label(sample, labelnames, 1, keep=False)
 
 def accept_label(sample, labelnames):
     """ Only accept samples which has the value of 1 for one or more of the given labelnames"""
