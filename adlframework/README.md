@@ -69,4 +69,4 @@ There are two types of experiment. Each represents an instance of an experiment 
  To-Do: Write documentation
 
 ### Advanced Experiment
-An advanced recordinig takes in an epoch method. It will run it for the specified number of epochs
+An advanced recordinig takes in an epoch method. It will run it for the specified number of epochs. Keras callbacks are still acceptable, though so are regular functions.

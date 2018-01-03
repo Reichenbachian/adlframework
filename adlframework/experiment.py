@@ -119,8 +119,13 @@ class AdvancedExperiment(__Experiment__):
 		### Compile the network
 		self.compile_network()
 		
+		for i in range(len(self.callbacks)):
+			callback = self.callbacks[i]
+			if type(callback) is type(self.run): # Is it a function
+				self.callbacks[i] = LambdaCallback()
+
+
 		for epoch in tqdm(range(self.epochs)):
+			##### On Epoch begin
 			info_dict = self.epoch()
-			for callback in self.callbacks:
-				callback(info_dict)
 
