@@ -1,1 +1,2 @@
-This script trains a basic classifier on a simple network.
+## MNIST Classifier
+This directory is a solution to the classic MNIST discriminator problem.
