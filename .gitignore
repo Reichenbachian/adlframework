@@ -4,3 +4,4 @@ build/*
 venv/*
 *.hdf*
 *mldata*
+*exps*
