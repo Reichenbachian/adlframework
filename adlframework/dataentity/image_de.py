@@ -14,7 +14,7 @@ class ImageFileDataEntity(DataEntity):
         self.data = None
         self.labels = None
 
-    def read_np(self):
+    def _read_np(self):
         """
         Receives a numpy array from retrieval and processes it into DataEntity's
         format.
@@ -23,7 +23,7 @@ class ImageFileDataEntity(DataEntity):
             self.data = self.retrieval.get_data(self.unique_id)
         return self.data
 
-    def read_file(self):
+    def _read_file(self):
         """
         Receives a file path from retrieval and processes it into DataEntity.
         Recommended to call read_raw to prevent rudundancy.

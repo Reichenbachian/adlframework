@@ -13,7 +13,7 @@ class NoiseDataEntity(DataEntity):
         self.shape = shape
         self.noise_metadata = noise_metadata
 
-    def read_raw(self):
+    def _read_raw(self):
         """
         Returns random noise of type.
         """

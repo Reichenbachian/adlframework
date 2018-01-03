@@ -34,7 +34,7 @@ class AudioFileDataEntity(DataEntity):
 
         self.labels = self.labels.sort_values(self.TIMESTAMP_KEY)
         
-    def read_file(self):
+    def _read_file(self):
         """
         Reads the raw data from the retrieval virtual or real file.
         Don't call these

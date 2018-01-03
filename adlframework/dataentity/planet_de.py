@@ -17,7 +17,7 @@ class PlanetDataEntity(DataEntity):
         self.retrieval = retrieval
         self.label = pd.read_csv(retrieval.read_label(unique_id)).iloc[0]
 
-    def read_raw(self):
+    def _read_raw(self):
         """
         Reads the raw data from the retrieval virtual or real file
         """
