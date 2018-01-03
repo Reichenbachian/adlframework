@@ -28,10 +28,11 @@ val_retrieval = JsonFile(fp=abs_path+'val.json',
                             label_columns=['is_iceberg'])
 
 ## Model
-net = medium_model(input_shape=(90, 75))
+net = medium_model(input_shape=(90, 125, 1),
+					target_shape=(1))
 
 ## Controllers
-controllers = [partial(reshape, shape=(90, 75))]
+controllers = [partial(reshape, shape=(90, 125, 1))]
 
 #### TRAINING DATASOURCE
 iceberg_trainds = DataSource(train_retrieval, ImageFileDataEntity,
@@ -51,7 +52,6 @@ boat_valds = DataSource(val_retrieval, ImageFileDataEntity,
 train_ds = iceberg_trainds + boat_trainds
 val_ds = iceberg_valds + boat_valds
 
-pdb.set_trace()
 
 #### Callbacks
 callbacks = [ModelCheckpoint('weights.{epoch:02d}-{val_loss:.2f}.hdf5')]
