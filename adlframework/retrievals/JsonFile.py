@@ -1,4 +1,4 @@
-from .retrieval import Retrieval
+from retrieval import Retrieval
 import pandas as pd
 import numpy as np
 
