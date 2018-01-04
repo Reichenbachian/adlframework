@@ -1,4 +1,15 @@
+### Usual
 *.pyc
 *.DS_Store
 build/*
 venv/*
+
+### DL Files
+*.hdf*
+
+### Common Folders
+*mldata*
+*exps*
+
+### Data Types
+*.json

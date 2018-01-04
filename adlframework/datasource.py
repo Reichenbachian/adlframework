@@ -5,6 +5,7 @@ import numpy as np
 import logging
 import copy
 from tqdm import tqdm
+from datasource_union import DataSourceUnion
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +34,16 @@ class DataSource():
 		self.batch_size = batch_size
 		self.list_pointer = 0
 		self.timeout = timeout
-		if not ignore_cache and retrieval.is_cached(): # Read from cache
-			self._entities = self._retrieval.load_from_cache()
-		else: # create cache otherwise
-			for id_ in retrieval.list():
-				self._entities.append(Entity(id_, retrieval, **kwargs))
-			retrieval.cache()
+		if retrieval == None:
+			logger.log(logging.INFO, 'retrieval is set to none. Assuming a single entity with random initialization.')
+			self._entities.append(Entity(0, **kwargs))
+		else:
+			if not ignore_cache and retrieval.is_cached(): # Read from cache
+				self._entities = self._retrieval.load_from_cache()
+			else: # create cache otherwise
+				for id_ in retrieval.list():
+					self._entities.append(Entity(id_, retrieval, **kwargs))
+				retrieval.cache()
 
 		### Prefilter
 		# logger.log(logging.INFO, 'Prefiltering entities')
@@ -137,3 +142,15 @@ class DataSource():
 		'''
 		return self.next(batch_size)
 
+	def __add__(self, other_dsa):
+		"""
+		Combines two datasource objects while maintaining percentages.
+		"""
+		if isinstance(other_dsa, DataSource):
+			return DataSourceUnion([self, other_dsa])
+		elif isinstance(other_dsa, DataSourceUnion):
+			dss = other_dsa.datasources
+			dss.extend(self)
+			return DataSourceUnion(dss)
+		else:
+			raise Exception("Can only combine DataSource or DataSourceUnion objects!")

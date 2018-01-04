@@ -14,11 +14,12 @@ setup(name='adlframework',
       url='https://student.andover.edu',
       packages=['adlframework',
     					"adlframework.retrievals",
+              "adlframework.augmentations",
               "adlframework.dataentity",
               "adlframework.nets",
               "adlframework.processors",
               "adlframework.callbacks",
-              "adlframework.filters"
+              "adlframework.filters",
 					],
       install_requires=reqs,
      )

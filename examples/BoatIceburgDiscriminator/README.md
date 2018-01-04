@@ -1,0 +1,2 @@
+## Kaggle Boat vs. Iceburg Competition
+In this directory is the code used to compete in a kaggle competition(url here), in which the goal was to discriminate between iceburgs and boats from satellite imagery.

@@ -1,17 +1,18 @@
 from keras.layers import Activation, Reshape
-import attr
 import logging
 
 logger = logging.getLogger(__name__)
 
-@attr.s
 class Net(object):
-	target_shape = attr.ib()
-	input_shape = attr.ib()
-	transfer = attr.ib(default=False)
-	softmax = attr.ib(default=False)
-	PADDING = attr.ib(default='valid')
-	REGULARIZATION = attr.ib(default=0.001)
+	def __init__(self, **kwargs):
+		self.softmax = False
+		self.PADDING = 'valid'
+		self.REGULARIZATION = .001
+		self.transfer = False
+		self.target_shape = None
+		self.input_shape = None
+		for key in kwargs:
+			setattr(self, key, kwargs[key])
 
 	@staticmethod
 	def build_model_wrapper(build_model):
@@ -30,7 +31,7 @@ class Net(object):
 			if reshape_out_shape != None: # Add reshape layer to reshape
 				model.add(Reshape(reshape_out_shape))
 
-			logger.log(logging.INFO, "Input shape to network is ", model.input_shape)
+			# logger.log(logging.INFO, "Input shape to network is ", self.input_shape)
 			if self.softmax:
 				model.add(Activation('softmax'))
 			return model

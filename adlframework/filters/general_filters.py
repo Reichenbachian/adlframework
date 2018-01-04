@@ -13,12 +13,11 @@ def min_array_shape(sample, min_shape=None):
 
 def ignore_label(sample, labelnames):
     """ Reject samples for which the value for any of labelnames is 1, accept otherwise"""
-    # entity, label = 
-    return threshold_ignore_label(sample, labelnames, 1)
+    return threshold_label(sample, labelnames, 1, keep=False)
 
 def accept_label(sample, labelnames):
     """ Only accept samples which has the value of 1 for one or more of the given labelnames"""
-    return threshold_accept_label(sample, labelnames, 1)
+    return threshold_label(sample, labelnames, 1)
 
 
 def threshold_label(sample, labelnames, threshold,
@@ -37,14 +36,11 @@ def threshold_label(sample, labelnames, threshold,
     data, label = sample
     if isinstance(labelnames, basestring):
         labelnames = [labelnames]
-    def threshold_label(label):
-        for labelname in labelnames:
-            if labelname not in label: # Remove unpresent
-                return keep_unpresent
-            if (greater_than and label[labelname] >= threshold) or \
-                (not greater_than and label[labelname] <= threshold) or \
-                (equal_to and label[labelname] == threshold):
-                return keep
-        return not keep
-
-    return threshold_label #### If there aren't any left, remove the entity.
+    for labelname in labelnames:
+        if labelname not in label: # Remove unpresent
+            return keep_unpresent
+        if (greater_than and label[labelname] >= threshold) or \
+            (not greater_than and label[labelname] <= threshold) or \
+            (equal_to and label[labelname] == threshold):
+            return keep
+    return not keep
