@@ -1,4 +1,4 @@
-from .retrieval import Retrieval
+from retrieval import Retrieval
 import os
 from glob2 import iglob
 
