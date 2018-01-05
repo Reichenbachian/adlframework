@@ -30,7 +30,6 @@ class BlobLocalCache(Retrieval):
 	_return_type = 'file path'
 	def __init__(self, data_dir, labels_dir):
 		super(BlobLocalCache, self).__init__()
-		self._return_type = 'file path'
 		self.data_dir = os.path.abspath(data_dir)+'/'
 		self.label_dir = os.path.abspath(labels_dir)+'/'
 
