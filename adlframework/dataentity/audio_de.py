@@ -2,11 +2,12 @@ import attr
 import pandas as pd
 import scipy.io.wavfile as wav
 from adlframework._dataentity import DataEntity
-from adlframework.utils import get_logger
 import random
 import numpy as np
+import logging
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
+
 
 class AudioFileDataEntity(DataEntity):
     # original audio file length
