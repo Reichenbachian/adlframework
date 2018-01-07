@@ -26,7 +26,10 @@ class DataSource():
 	'''
 
 	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, timeout=None,
-					prefilters=[], **kwargs):
+					prefilters=[], verbose=0, **kwargs):
+		assert verbose <= 3 and verbose >= 0, 'verbosity must be between 0 and 3'
+
+		self.verbose = verbose	# 0: All debug, 1 some debug, 3 all debug.
 		self._retrieval = retrieval
 		self.controllers = controllers
 		self.prefilters = prefilters
@@ -97,8 +100,9 @@ class DataSource():
 					batch.append(sample)
 					# pbar.update()
 			except Exception as e:
-				print(e)
-				logger.log(logging.WARNING, 'Controller or sample Failure')
+				if self.verbosity == 0:
+					logger.log(logging.WARNING, str(e))
+					logger.log(logging.WARNING, 'Controller or sample Failure')
 			self.list_pointer += 1
 			if self.list_pointer >= len(self._entities): # Loop batch if necessary(while randomize before next iteration)
 				self.list_pointer = 0
