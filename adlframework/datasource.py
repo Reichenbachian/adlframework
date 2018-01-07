@@ -26,8 +26,8 @@ class DataSource():
 	'''
 
 	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, timeout=None,
-					prefilters=[], verbose=0, **kwargs):
-		assert verbose <= 3 and verbose >= 0, 'verbosity must be between 0 and 3'
+					prefilters=[], verbosity=0, **kwargs):
+		assert verbosity <= 3 and verbosity >= 0, 'verbosity must be between 0 and 3'
 
 		self.verbose = verbose	# 0: All debug, 1 some debug, 3 all debug.
 		self._retrieval = retrieval
