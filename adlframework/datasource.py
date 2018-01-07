@@ -29,7 +29,7 @@ class DataSource():
 					prefilters=[], verbosity=0, **kwargs):
 		assert verbosity <= 3 and verbosity >= 0, 'verbosity must be between 0 and 3'
 
-		self.verbose = verbose	# 0: All debug, 1 some debug, 3 all debug.
+		self.verbosity = verbosity	# 0: All debug, 1 some debug, 3 all debug.
 		self._retrieval = retrieval
 		self.controllers = controllers
 		self.prefilters = prefilters
