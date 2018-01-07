@@ -6,6 +6,7 @@ import logging
 import copy
 from tqdm import tqdm
 from datasource_union import DataSourceUnion
+import psutil
 
 logger = logging.getLogger(__name__)
 
