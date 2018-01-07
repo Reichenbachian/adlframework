@@ -31,7 +31,7 @@ class DataSource():
 		assert verbosity <= 3 and verbosity >= 0, 'verbosity must be between 0 and 3'
 
 		self.max_mem_percent = max_mem_percent
-		self.verbosity = verbosity	# 0: All debug, 1 some debug, 3 all debug.
+		self.verbosity = verbosity	# 0: little to no debug, 1 some debug, 3 all debug.
 		self._retrieval = retrieval
 		self.controllers = controllers
 		self.prefilters = prefilters
@@ -103,7 +103,7 @@ class DataSource():
 					batch.append(sample)
 					# pbar.update()
 			except Exception as e:
-				if self.verbosity == 0:
+				if self.verbosity == 3:
 					logger.log(logging.WARNING, str(e))
 					logger.log(logging.WARNING, 'Controller or sample Failure')
 			self.list_pointer += 1
@@ -112,7 +112,10 @@ class DataSource():
 				logger.log(logging.INFO, 'Looped the datasource')
 				should_reset_queue = True
 		
+			# Check if we have enough memory to keep sample in memory
 			if psutil.virtual_memory().percent/100.0 > self.max_mem_percent:
+				if self.verbosity >= 2:
+					logger.log()
 				del entity.data
 
 		# Reset entities if necessary
@@ -144,6 +147,12 @@ class DataSource():
 		ds2._entities = ds1._entities[break_off:]
 		ds1._entities = ds1._entities[:break_off]
 		return ds1, ds2
+
+	def __iter__(self):
+		'''
+		Making an iterator object
+		'''
+		return self
 
 	def __next__(self, batch_size=None):
 		'''
