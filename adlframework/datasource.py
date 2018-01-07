@@ -26,9 +26,10 @@ class DataSource():
 	'''
 
 	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, timeout=None,
-					prefilters=[], verbosity=0, **kwargs):
+					prefilters=[], verbosity=0, max_mem_percent=.95, **kwargs):
 		assert verbosity <= 3 and verbosity >= 0, 'verbosity must be between 0 and 3'
 
+		self.max_mem_percent = max_mem_percent
 		self.verbosity = verbosity	# 0: All debug, 1 some debug, 3 all debug.
 		self._retrieval = retrieval
 		self.controllers = controllers
@@ -92,6 +93,7 @@ class DataSource():
 		# pbar = tqdm(total=batch_size, leave=False)
 		while len(batch) < batch_size: # Create a batch
 			entity = self._entities[self.list_pointer] # Grab next entity
+
 			try:
 				sample = entity.get_sample()
 				sample = self.process_sample(sample)
@@ -108,7 +110,9 @@ class DataSource():
 				self.list_pointer = 0
 				logger.log(logging.INFO, 'Looped the datasource')
 				should_reset_queue = True
-		# pbar.clear()
+		
+			if psutil.virtual_memory().percent/100.0 > self.max_mem_percent:
+				del entity.data
 
 		# Reset entities if necessary
 		if should_reset_queue:
