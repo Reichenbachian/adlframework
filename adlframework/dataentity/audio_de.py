@@ -43,7 +43,7 @@ class AudioSegmentDataEntity(DataEntity):
 
     def get_sample(self):
         '''
-        Given a numpy array of returned sample, it returns a sample.
+        Returns a sample
         '''
         if self.labels is None: # Read labels into memory.
             self.labels = self.retrieval.get_label(self.unique_id)
