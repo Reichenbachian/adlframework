@@ -24,14 +24,12 @@ class AudioSegmentDataEntity(DataEntity):
     fs   = attr.ib(validator=attr.validators.instance_of(int))
     
 
-    def __init__(self, unique_id, retrieval, pad="zeros"):
+    def __init__(self, unique_id, retrieval):
         '''
         Window length is in seconds.
         '''
         self.unique_id = unique_id
         self.retrieval = retrieval
-        self.pad = pad
-        self.labels = pd.read_csv(retrieval.get_label(unique_id))
         
     def _read_file(self):
         '''
