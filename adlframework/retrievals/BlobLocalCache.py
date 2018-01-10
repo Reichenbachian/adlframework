@@ -43,7 +43,7 @@ class BlobLocalCache(Retrieval):
 		'''
 		Returns a file path.
 		'''
-		return pd.read_csv(self.label_dir+id_[:-4]+'.csv')
+		return pd.read_csv(self.label_dir+id_[:id_.rfind('.')]+'.csv')
 
 	def list(self):
 		'''
