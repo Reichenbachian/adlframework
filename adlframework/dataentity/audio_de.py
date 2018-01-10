@@ -9,10 +9,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class AudioFileDataEntity(DataEntity):
+class AudioSegmentDataEntity(DataEntity):
     '''
     This represents a short audio segment. One that can be clipped on both
-    ends for training without losing a significant amount of data.
+    ends for training without losing a significant amount of data. Usually,
+    this segment possesses a single label.
 
     length - length in seconds of audio file
     fs     - sampling rate of audio file
@@ -53,3 +54,16 @@ class AudioFileDataEntity(DataEntity):
 
         return self.data, self.labels
         
+class AudioRecordingDataEntity(DataEntity):
+    '''
+    This represents a longer audio segment. One that has many internal
+    labels delimited by timestamps.
+
+    Preconditions
+    Labels contain a Timestamps column!
+
+    length - length in seconds of audio file
+    fs     - sampling rate of audio file
+    '''
+    # To-Do: Implement!
+    pass
