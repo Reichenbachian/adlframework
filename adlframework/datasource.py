@@ -131,8 +131,10 @@ class DataSource():
 				should_reset_queue = True
 		
 			# Check if we have enough memory to keep sample in memory
-			if psutil.virtual_memory().percent/100.0 > self.max_mem_percent:
+			mem = psutil.virtual_memory()
+			if mem.percent/100.0 > self.max_mem_percent:
 				del entity.data
+			mem.close() # virtual_memory opens file, so gotta close it
 
 		# Reset entities if necessary
 		if should_reset_queue:
