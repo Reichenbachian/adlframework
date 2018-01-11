@@ -1,3 +1,13 @@
+'''
+Why are there three Audio Classes?
+One is a base class to prevent redundancy.
+There is a fundamental difference between the other two.
+
+In the colloquium, there are two ways to store audio
+files: in short segments with one-hot labels. The other
+is in larger audio recordings with timestamps and multiple
+
+'''
 import attr
 import pandas as pd
 import scipy.io.wavfile as wav
@@ -8,8 +18,27 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+class AudioFileDataEntity(DataEntity):
+    '''
+    A base class for audio entities.
+    '''
+    def get_sample(self):
+        '''
+        Should never be called
+        '''
+        raise Exception("AudioFileDataEntity is deprecated. Use AudioSegmentDataEntity or AudioRecordingDataEntity.")
+    
+    def _read_file(self):
+        '''
+        Reads the raw data from the retrieval virtual or real file.
+        Don't call these
+        '''
+        f = self.retrieval.get_data(self.unique_id)
+        self.fs, self.data = wav.read(f)
+        self.length = len(audio)/float(self.fs)
+        return audio
 
-class AudioSegmentDataEntity(DataEntity):
+class AudioSegmentDataEntity(AudioFileDataEntity):
     '''
     This represents a short audio segment. One that can be clipped on both
     ends for training without losing a significant amount of data. Usually,
@@ -22,24 +51,6 @@ class AudioSegmentDataEntity(DataEntity):
     length   = attr.ib(validator=attr.validators.instance_of(float))
     # Sampling rate
     fs   = attr.ib(validator=attr.validators.instance_of(int))
-    
-
-    def __init__(self, unique_id, retrieval):
-        '''
-        Window length is in seconds.
-        '''
-        self.unique_id = unique_id
-        self.retrieval = retrieval
-        
-    def _read_file(self):
-        '''
-        Reads the raw data from the retrieval virtual or real file.
-        Don't call these
-        '''
-        f = self.retrieval.get_data(self.unique_id)
-        self.fs, self.data = wav.read(f)
-        self.length = len(audio)/float(self.fs)
-        return audio
 
     def get_sample(self):
         '''
@@ -52,7 +63,7 @@ class AudioSegmentDataEntity(DataEntity):
 
         return self.data, self.labels
         
-class AudioRecordingDataEntity(DataEntity):
+class AudioRecordingDataEntity(AudioFileDataEntity):
     '''
     This represents a longer audio segment. One that has many internal
     labels delimited by timestamps.
@@ -64,4 +75,6 @@ class AudioRecordingDataEntity(DataEntity):
     fs     - sampling rate of audio file
     '''
     # To-Do: Implement!
-    pass
+    def __init__(self, padding, **kwargs):
+        DataEntity.__init__(self, **kwargs)
+        self.padding = padding

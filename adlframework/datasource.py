@@ -4,9 +4,15 @@ from multiprocessing import Pool, Queue
 import numpy as np
 import logging
 import copy
-from tqdm import tqdm
+from adlframework.utils import in_ipynb
 from datasource_union import DataSourceUnion
 import psutil
+
+# Import corrent version of tqdm(jupyter notebook vs non)
+if in_ipynb():
+	from tqdm import tqdm_notebook as tqdm
+else:
+	from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +33,8 @@ class DataSource():
 	'''
 
 	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, timeout=None,
-					prefilters=[], verbosity=0, max_mem_percent=.95, **kwargs):
-		assert verbosity <= 3 and verbosity >= 0, 'verbosity must be between 0 and 3'
-
+					prefilters=[], verbosity=logging.DEBUG, max_mem_percent=.95, **kwargs):
+		logging.basicConfig(level=verbosity)
 		self.max_mem_percent = max_mem_percent
 		self.verbosity = verbosity	# 0: little to no debug, 1 some debug, 3 all debug.
 		self._retrieval = retrieval
@@ -50,15 +55,28 @@ class DataSource():
 					self._entities.append(Entity(id_, retrieval, **kwargs))
 				retrieval.cache()
 
-		### Prefilter
-		# logger.log(logging.INFO, 'Prefiltering entities')
-		# for entity in self._entities:
-		# 	if all()
+		self.__prefilter()
 
 		shuffle(self._entities)
 		assert len(self._entities) > 0, "Cannot initialize an empty data source"
 		assert type(self.controllers) is list, "Please make augmentors a list in all data sources"
 		assert type(self.prefilters) is list, "Please make augmentors a list in all data sources"
+
+	def __prefilter(self):
+		'''
+		Prefilters the samples.
+		A prefilter gets just the label and the id.
+		### To-Do: Implement Remove_segment.
+		'''
+		### Prefilter
+		NUM_DASHES = 40
+		logger.log(logging.INFO, 'Prefiltering entities')
+		for i, pf in enumerate(self.prefilters):
+			logger.log(logging.INFO, '-'*NUM_DASHES+'Filter ' +str(i)+'-'*NUM_DASHES)
+			logger.log(logging.INFO, pf)
+			logger.log(logging.INFO, 'Before filter '+str(i)+', there are '+ str(len(self._entities))+' entities.')
+			self._entities = filter(pf, tqdm(self._entities))
+			logger.log(logging.INFO, 'After filter '+str(i)+', there are '+ str(len(self._entities))+' entities.')
 
 	def should_reset_queue(self):
 		shuffle(self._entities)
@@ -114,8 +132,6 @@ class DataSource():
 		
 			# Check if we have enough memory to keep sample in memory
 			if psutil.virtual_memory().percent/100.0 > self.max_mem_percent:
-				if self.verbosity >= 2:
-					logger.log()
 				del entity.data
 
 		# Reset entities if necessary
@@ -130,6 +146,23 @@ class DataSource():
 		data = np.array(data)
 		labels = np.array(labels)
 		return data, labels
+
+	def filter_ids(self, id_list):
+		'''
+		Filters by a list of ids
+		'''
+		id_set = set(id_list)
+		def in_set(e):
+			return e.unique_id in id_set
+		logger.log(logging.INFO, 'Filtering by id list. Size pre-filter is'+str(len(self._entities)))
+		self._entities = filter(in_set, self._entities)
+		logger.log(logging.INFO, 'Done filtering. Size post-filter is'+str(len(self._entities)))
+
+	def save_ids(self, name):
+		'''
+		Saves a list of newline delimiated ids.
+		'''
+		open(name, 'w').write('\n'.join([str(x.unique_id) for x in self._entities]))
 
 	@staticmethod
 	def split(ds1, split_percent=.5):

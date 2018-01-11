@@ -8,12 +8,6 @@ class ImageFileDataEntity(DataEntity):
     Represents a single image.
     '''
 
-    def __init__(self, unique_id, retrieval):
-        self.unique_id = unique_id
-        self.retrieval = retrieval
-        self.data = None
-        self.labels = None
-
     def _read_np(self):
         """
         Receives a numpy array from retrieval and processes it into DataEntity's
