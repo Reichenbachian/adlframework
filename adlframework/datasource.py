@@ -134,7 +134,7 @@ class DataSource():
 			mem = psutil.virtual_memory()
 			if mem.percent/100.0 > self.max_mem_percent:
 				del entity.data
-			mem.close() # virtual_memory opens file, so gotta close it
+			del mem # Shouldn't be necessary, but just in case.
 
 		# Reset entities if necessary
 		if should_reset_queue:
