@@ -68,7 +68,7 @@ def crop(sample, shape):
 #########################
 def zeros(sample, shape):
     data, label = sample
-    assert data.ndim == shape.ndim, "Data and shape must have same number of dimensions."
+    assert data.ndim == len(shape), "Data and shape must have same number of dimensions."
     zeros = np.zeros(shape)
     s = [slice(None, x) for x in data.shape]
     zeros[s] = data
