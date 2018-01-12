@@ -23,7 +23,8 @@ Optional Parameters
 '''
 
 class DataEntity(object):
-	def __init__(self, unique_id, retrieval, sampler=None, backend='default'):
+	def __init__(self, unique_id, retrieval, verbosity, sampler=None, backend='default'):
+		self.verbosity = verbosity
 		self.unique_id = unique_id
 		self.retrieval = retrieval
 		self.sampler = sampler

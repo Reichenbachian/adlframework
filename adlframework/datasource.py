@@ -52,7 +52,7 @@ class DataSource():
 				self._entities = self._retrieval.load_from_cache()
 			else: # create cache otherwise
 				for id_ in retrieval.list():
-					self._entities.append(Entity(id_, retrieval, **kwargs))
+					self._entities.append(Entity(id_, retrieval, verbosity, **kwargs))
 				retrieval.cache()
 
 		self.__prefilter()

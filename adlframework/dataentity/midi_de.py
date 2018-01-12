@@ -23,7 +23,7 @@ class MidiDataEntity(DataEntity):
         if self.backend == 'default':
             return converter.parse(f)
         elif self.backend == 'madmom':
-            return MIDIFile.from_file(f)
+            return MIDIFile.from_file(f, suppress_warnings=self.verbosity < 3)
         else:
             raise NotImplemented(str(self.backend)+' is not implemented as a backend')
 
