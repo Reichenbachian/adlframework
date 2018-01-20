@@ -122,7 +122,7 @@ class DataSource():
 					# pbar.update()
 			except Exception as e:
 				if self.verbosity == 3:
-					logging.error(logging.WARNING, 'Controller or sample Failure')
+					logging.error('Controller or sample Failure')
 					logging.error(e, exc_info=True)
 			self.list_pointer += 1
 			if self.list_pointer >= len(self._entities): # Loop batch if necessary(while randomize before next iteration)
