@@ -25,6 +25,12 @@ class DataSource():
 	 - 'Entity' - the entity class for which to construct entities.
 	 - 'timeout' - timeout is used on a per sample basis. Not per batch.
 
+	 Multiprocessing
+	 -------------------
+	 - 'workers': number of asyncronous workers to fetch and process data. Does not apply to
+	 			  prefiltering.
+	 - 'queue_size': Number of samples the workers should prefetch.
+
 	Attributes
 	-----------
 	 - '_entities' - a list of data entities
@@ -34,10 +40,10 @@ class DataSource():
 	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, timeout=None,
 					prefilters=[], verbosity=logging.DEBUG, max_mem_percent=.95, workers=1, queue_size=None, **kwargs):
 		#### PRE-INITIALIZATION CHECKS
-		assert type(self.controllers) is list, "Please make augmentors a list in all data sources"
-		assert type(self.prefilters) is list, "Please make augmentors a list in all data sources"
-		assert self.workers > 0, "Workers must be a positive integer."
-		assert not (self.workers == 1 and queue_size == None), ''
+		assert type(controllers) is list, "Please make augmentors a list in all data sources"
+		assert type(prefilters) is list, "Please make augmentors a list in all data sources"
+		assert workers > 0, "Workers must be a positive integer."
+		assert not (workers == 1 and queue_size != None), 'Queue_Size is only applicable to multiple workers. Try limiting memory with max_mem_percent.'
 
 		#### CLASS VARIABLE INITIALIZATION
 		logging.basicConfig(level=verbosity)
@@ -70,19 +76,24 @@ class DataSource():
 
 		#### MULTIPROCESSING INITIALIZATION
 		if self.workers > 1:
-			from multiprocessing import Pool, Queue
-			for _ in range(self.workers):
-				t = Thread(target=async_add_to_sample_queue)
-				t.daemon = True
-				t.start()
+			from multiprocessing import Process, Queue
 			self.entity_queue = Queue() # Stores entites. Not list indices.
 			self.sample_queue = Queue(queue_size)
+			Process(target=self.async_fill_queue).start()
+			for _ in range(self.workers):
+				Process(target=self.async_add_to_sample_queue).start()
 
 
 		#### POST-INITIALIZATION CHECKS
 		assert len(self._entities) > 0, "Cannot initialize an empty data source"
+	def async_fill_queue(self):
+		while not self.sample_queue.full(): # Worst case: Very fast processor, very large queue. Then slow first load.
+			self.entity_queue.put(self._entities[self.list_pointer])
+			self.list_pointer += 1
+			if self.list_pointer >= len(self._entities):
+				self.reset_queue()
 
-	def async_add_to_sample_queue():
+	def async_add_to_sample_queue(self):
 		'''
 		Runs continuously in background to collect data segments
 		and add them to the common queue.
@@ -92,13 +103,12 @@ class DataSource():
 				entity = self.entity_queue.get()
 				sample = entity.get_sample()
 				sample = self.process_sample(sample)
+				if sample: # If sample is processed and acceptable, append to queue
+					self.sample_queue.put(sample)
 			except Exception as e:
 				if self.verbosity == 3:
 					logging.error('Controller or sample Failure')
 					logging.error(e, exc_info=True)
-			if sample: # If sample is processed and acceptable, append to queue
-				self.sample_queue.put(sample)
-			self.entity_queue.task_done()
 
 
 
@@ -119,7 +129,8 @@ class DataSource():
 			self._entities = filter(pf, tqdm(self._entities))
 			logger.log(logging.INFO, 'After filter '+str(i)+', there are '+ str(len(self._entities))+' entities.')
 
-	def should_reset_queue(self):
+	def reset_queue(self):
+		logger.log(logging.INFO, 'Shuffling the datasource')
 		shuffle(self._entities)
 		self.list_pointer = 0
 
@@ -135,7 +146,7 @@ class DataSource():
 			tmp = controller(sample)
 			sample = sample if tmp == True else tmp
 			if sample == False:
-				return sample
+				return False
 		return sample
 
 	def next(self, batch_size=None):
@@ -150,22 +161,25 @@ class DataSource():
 		batch_size = batch_size if batch_size != None else self.batch_size
 		should_reset_queue = False
 		batch = []
-		# pbar = tqdm(total=batch_size, leave=False)
 		while len(batch) < batch_size: # Create a batch
 			entity = self._entities[self.list_pointer] # Grab next entity
+			if self.workers == 1:
+				try:
+					sample = entity.get_sample()
+					sample = self.process_sample(sample)
+					if sample: # Only add to batch if it passes all per sample filters
+						# To-Do: Somehow prevent redundant rejections.
+						batch.append(sample)
 
-			try:
-				sample = entity.get_sample()
-				sample = self.process_sample(sample)
-				if sample: # Only add to batch if it passes all per sample filters
-					# To-Do: Somehow prevent redundant rejections.
-					batch.append(sample)
-					# pbar.update()
-			except Exception as e:
-				if self.verbosity == 3:
-					logging.error('Controller or sample Failure')
-					logging.error(e, exc_info=True)
-			self.list_pointer += 1
+				except Exception as e:
+					if self.verbosity == 3:
+						logging.error('Controller or sample Failure')
+						logging.error(e, exc_info=True)
+				self.list_pointer += 1
+			else:
+				sample = self.sample_queue.get()
+				batch.append(sample)
+
 			if self.list_pointer >= len(self._entities): # Loop batch if necessary(while randomize before next iteration)
 				self.list_pointer = 0
 				logger.log(logging.INFO, 'Looped the datasource')
@@ -179,15 +193,9 @@ class DataSource():
 
 		# Reset entities if necessary
 		if should_reset_queue:
-			logger.log(logging.INFO, 'Shuffling the datasource')
-			self.list_pointer = 0
-			shuffle(self._entities)
+			self.reset_queue()
 
-		# Turn sample into keras readable sample
-		data, labels = zip(*batch)
-		labels = list(labels)
-		data = np.array(data)
-		return data, labels
+		return zip(*batch) # Equivalent to data, labels
 
 	def filter_ids(self, id_list):
 		'''

@@ -18,6 +18,18 @@ def pdb_trace(sample, targets=[], reverse=None):
     '''
     pdb.set_trace()
 
+def to_np_arr(sample, convert_data=True, convert_label=True):
+    '''
+    Converts either or the data and the label of the sample to
+    a numpy array.
+    '''
+    data, label = sample
+    if convert_data:
+        data = np.array(data)
+    if convert_label:
+        label = np.array(label)
+    return data, label
+
 def map_labels(sample, targets=[], reverse=None):
     '''
     Maps a pandas label to an array.
