@@ -77,7 +77,7 @@ class DataSource():
 		#### MULTIPROCESSING INITIALIZATION
 		if self.workers > 1:
 			from multiprocessing import Process, Queue
-			self.entity_queue = Queue() # Stores entites. Not list indices.
+			self.entity_queue = Queue(queue_size) # Stores entites. Not list indices.
 			self.sample_queue = Queue(queue_size)
 			Process(target=self.async_fill_queue).start()
 			for _ in range(self.workers):
@@ -86,6 +86,7 @@ class DataSource():
 
 		#### POST-INITIALIZATION CHECKS
 		assert len(self._entities) > 0, "Cannot initialize an empty data source"
+
 	def async_fill_queue(self):
 		while not self.sample_queue.full(): # Worst case: Very fast processor, very large queue. Then slow first load.
 			self.entity_queue.put(self._entities[self.list_pointer])
@@ -159,7 +160,6 @@ class DataSource():
 		Additionally, allows overwriting of batch_size constant.
 		'''
 		batch_size = batch_size if batch_size != None else self.batch_size
-		should_reset_queue = False
 		batch = []
 		while len(batch) < batch_size: # Create a batch
 			entity = self._entities[self.list_pointer] # Grab next entity
@@ -180,20 +180,14 @@ class DataSource():
 				sample = self.sample_queue.get()
 				batch.append(sample)
 
-			if self.list_pointer >= len(self._entities): # Loop batch if necessary(while randomize before next iteration)
-				self.list_pointer = 0
-				logger.log(logging.INFO, 'Looped the datasource')
-				should_reset_queue = True
+			if self.list_pointer >= len(self._entities):
+				reset_queue()
 		
 			# Check if we have enough memory to keep sample in memory
 			mem = psutil.virtual_memory()
 			if mem.percent/100.0 > self.max_mem_percent:
 				del entity.data
 			del mem # Shouldn't be necessary, but just in case.
-
-		# Reset entities if necessary
-		if should_reset_queue:
-			self.reset_queue()
 
 		return zip(*batch) # Equivalent to data, labels
 
