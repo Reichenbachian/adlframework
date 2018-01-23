@@ -1,5 +1,6 @@
 from adlframework._dataentity import DataEntity
 from madmom.utils.midi import MIDIFile
+from madmom.utils import suppress_warnings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,7 @@ class MidiDataEntity(DataEntity):
         """
         raise NotImplemented('Reading from raw midi data is not implemented.')
 
+    @suppress_warnings
     def _read_file(self):
         """
         Receives a file path from retrieval and processes it into DataEntity.
@@ -23,7 +25,7 @@ class MidiDataEntity(DataEntity):
         if self.backend == 'default':
             return converter.parse(f)
         elif self.backend == 'madmom':
-            return MIDIFile.from_file(f, suppress_warnings=self.verbosity < 3)
+            return MIDIFile.from_file(f)
         else:
             raise NotImplemented(str(self.backend)+' is not implemented as a backend')
 
