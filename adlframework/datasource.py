@@ -88,7 +88,10 @@ class DataSource():
 		assert len(self._entities) > 0, "Cannot initialize an empty data source"
 
 	def async_fill_queue(self):
-		while not self.sample_queue.full():
+		'''
+		Adds to the entity_queue for processing.
+		'''
+		while True:
 			self.entity_queue.put(self._entities[self.list_pointer])
 			self.list_pointer += 1
 			if self.list_pointer >= len(self._entities):
