@@ -146,7 +146,6 @@ class DataSource():
 		data, labels = zip(*batch)
 		labels = list(labels)
 		data = np.array(data)
-		labels = np.array(labels)
 		return data, labels
 
 	def filter_ids(self, id_list):
