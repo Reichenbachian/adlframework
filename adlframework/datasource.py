@@ -1,6 +1,5 @@
 import pdb
 from random import shuffle
-from multiprocessing import Pool, Queue
 import numpy as np
 import logging
 import copy
@@ -33,7 +32,14 @@ class DataSource():
 	'''
 
 	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, timeout=None,
-					prefilters=[], verbosity=logging.DEBUG, max_mem_percent=.95, **kwargs):
+					prefilters=[], verbosity=logging.DEBUG, max_mem_percent=.95, workers=1, queue_size=None, **kwargs):
+		#### PRE-INITIALIZATION CHECKS
+		assert type(self.controllers) is list, "Please make augmentors a list in all data sources"
+		assert type(self.prefilters) is list, "Please make augmentors a list in all data sources"
+		assert self.workers > 0, "Workers must be a positive integer."
+		assert not (self.workers == 1 and queue_size == None), ''
+
+		#### CLASS VARIABLE INITIALIZATION
 		logging.basicConfig(level=verbosity)
 		self.max_mem_percent = max_mem_percent
 		self.verbosity = verbosity	# 0: little to no debug, 1 some debug, 3 all debug.
@@ -44,6 +50,9 @@ class DataSource():
 		self.batch_size = batch_size
 		self.list_pointer = 0
 		self.timeout = timeout
+		self.workers = workers
+
+		#### RETRIEVAL INITIALIZATION
 		if retrieval == None:
 			logger.log(logging.INFO, 'retrieval is set to none. Assuming a single entity with random initialization.')
 			self._entities.append(Entity(0, **kwargs))
@@ -54,13 +63,44 @@ class DataSource():
 				for id_ in retrieval.list():
 					self._entities.append(Entity(id_, retrieval, verbosity, **kwargs))
 				retrieval.cache()
+		shuffle(self._entities)
 
+		#### PREFILTERS
 		self.__prefilter()
 
-		shuffle(self._entities)
+		#### MULTIPROCESSING INITIALIZATION
+		if self.workers > 1:
+			from multiprocessing import Pool, Queue
+			for _ in range(self.workers):
+				t = Thread(target=async_add_to_sample_queue)
+				t.daemon = True
+				t.start()
+			self.entity_queue = Queue() # Stores entites. Not list indices.
+			self.sample_queue = Queue(queue_size)
+
+
+		#### POST-INITIALIZATION CHECKS
 		assert len(self._entities) > 0, "Cannot initialize an empty data source"
-		assert type(self.controllers) is list, "Please make augmentors a list in all data sources"
-		assert type(self.prefilters) is list, "Please make augmentors a list in all data sources"
+
+	def async_add_to_sample_queue():
+		'''
+		Runs continuously in background to collect data segments
+		and add them to the common queue.
+		'''
+		while True:
+			try:
+				entity = self.entity_queue.get()
+				sample = entity.get_sample()
+				sample = self.process_sample(sample)
+			except Exception as e:
+				if self.verbosity == 3:
+					logging.error('Controller or sample Failure')
+					logging.error(e, exc_info=True)
+			if sample: # If sample is processed and acceptable, append to queue
+				self.sample_queue.put(sample)
+			self.entity_queue.task_done()
+
+
 
 	def __prefilter(self):
 		'''
@@ -70,7 +110,8 @@ class DataSource():
 		'''
 		### Prefilter
 		NUM_DASHES = 40
-		logger.log(logging.INFO, 'Prefiltering entities')
+		if len(self.prefilters) > 0:
+			logger.log(logging.INFO, 'Prefiltering entities')
 		for i, pf in enumerate(self.prefilters):
 			logger.log(logging.INFO, '-'*NUM_DASHES+'Filter ' +str(i)+'-'*NUM_DASHES)
 			logger.log(logging.INFO, pf)
