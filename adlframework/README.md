@@ -19,35 +19,7 @@ A data entity requires the two following properties
 To-Do: Give option of which controllers to execute(ie. stop at index i.)
 
 
-## Controllers
-
-
-### Pre-Filter (Not yet Implemented)
-A pre-filter goes through every segment of every dataentity and removes those labels from the object that do not match the criteria. Through the `remove_segment` method, that segment is requested to be removed from the dataentity(this can help preserve memory). If all segments are removed, then the entity is removed. A filter is given the label as its only required argument, though it is allowed to require more. For instance,
-```
-def a_pre_filter(label, n=10, k=2):
-	...
-	return True/False
-```
-
-A controller is something that controls the data stream leaving the iterator. It follows the syntax below and usually falls into one of three categories.
-```
-def a_controller(sample, n=10, k=2):
-	...
-	return True/False (if filtering) or sample (if sample should continue)
-```
-
-### Filters
-A filter gets a sample as an argument and returns True/False as to whether a sample meets criteria. This is considerably slower than a prefilter.
-
-### Augmentors
-Augmentors somehow change the data. Augmentors are usually only applied to the training data. 
-
-### Processors
-Processors are usually applied to both the training and validation data. For instance, normalization is usually done here. If this datasource is being used as an input to an experiment object, then, currently, it must return a valid numpy array input to keras.
-
-
-## Batch Updates
+## Batch Updates (Not Implemented)
 A batch update is used to somehow edit the training or batch environment in between batches. A batch update is called in between batches. For instance, it may used as batch balancing or in gan training.
 
 ```
