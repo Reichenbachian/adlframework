@@ -9,7 +9,7 @@ from keras.optimizers import Adadelta
 from keras.losses import categorical_crossentropy
 from adlframework.experiment import SimpleExperiment
 ### Controllers
-from adlframework.processors.general_processors import reshape, make_categorical
+from adlframework.processors.general_processors import reshape, make_categorical, to_np_arr
 ### Callbacks
 from adlframework.callbacks.image_callbacks import SaveValImages
 
@@ -23,7 +23,6 @@ controllers = [partial(reshape, shape=(28, 28, 1)),
 ### Load Data
 mnist_retrieval = MNIST_retrieval()
 mnist_ds = DataSource(mnist_retrieval, ImageFileDataEntity, controllers=controllers)
-
 train_ds, temp = DataSource.split(mnist_ds, split_percent=.6)
 val_ds, test_ds = DataSource.split(temp, split_percent=.6)
 
