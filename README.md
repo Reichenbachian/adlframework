@@ -77,5 +77,5 @@ Modularize deep learning to allow large scale experimentation organization relat
 
 ## Install
 ```
-pip install git+ssh://git@github.com/Reichenbachian/adlframework.git
+pip install git+http://git@github.com/Reichenbachian/adlframework.git
 ```
