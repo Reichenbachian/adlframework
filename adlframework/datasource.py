@@ -38,7 +38,8 @@ class DataSource():
 	'''
 
 	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, timeout=None,
-					prefilters=[], verbosity=logging.DEBUG, max_mem_percent=.95, workers=1, queue_size=None, **kwargs):
+					prefilters=[], verbosity=logging.DEBUG, max_mem_percent=.95, workers=1, queue_size=None,
+					convert_batch_to_np=True, **kwargs):
 		#### PRE-INITIALIZATION CHECKS
 		assert type(controllers) is list, "Please make augmentors a list in all data sources"
 		assert type(prefilters) is list, "Please make augmentors a list in all data sources"
@@ -57,6 +58,7 @@ class DataSource():
 		self.list_pointer = 0
 		self.timeout = timeout
 		self.workers = workers
+		self.convert_batch_to_np = convert_batch_to_np
 
 		#### RETRIEVAL INITIALIZATION
 		if retrieval == None:
@@ -189,7 +191,11 @@ class DataSource():
 				del entity.data
 			del mem # Shouldn't be necessary, but just in case.
 
-		return zip(*batch) # Equivalent to data, labels
+		data, labels = zip(*batch)
+		if self.convert_batch_to_np:
+			labels = np.array(labels)
+			data = np.array(data)
+		return data, labels  # Equivalent to data, labels
 
 	def filter_ids(self, id_list):
 		'''
