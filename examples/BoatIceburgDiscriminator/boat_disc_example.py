@@ -56,7 +56,7 @@ controllers = [partial(reshape, shape=(90, 125, 1)),
 				# partial(imgaug_augment, sequence=seq),
         make_categorical]
 
-universal_options = {'workers': 1, 'verbosity':3}
+universal_options = {'workers': 2, 'verbosity':3}
 #### TRAINING DATASOURCE
 iceberg_trainds = DataSource(train_retrieval, ImageFileDataEntity,
                   controllers = [partial(accept_label, labelnames="is_iceberg")] + controllers,
@@ -91,5 +91,5 @@ exp = SimpleExperiment(train_datasource=train_ds,
 						network = net,
             metrics=['acc'],
 						callbacks=callbacks)
-pdb.set_trace()
+
 exp.run()
