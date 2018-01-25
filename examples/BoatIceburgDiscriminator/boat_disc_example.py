@@ -8,13 +8,14 @@ from imgaug import augmenters as iaa
 from adlframework.retrievals.JsonFile import JsonFile
 from adlframework.datasource import DataSource
 from adlframework.dataentity.image_de import ImageFileDataEntity
+import numpy as np
 ### Model
 from adlframework.nets.image_nets import medium_model
 from keras.optimizers import Adadelta
-from keras.losses import KLD
+from keras.losses import categorical_crossentropy
 from adlframework.experiment import SimpleExperiment
 ### Controllers
-from adlframework.processors.general_processors import reshape, make_categorical
+from adlframework.processors.general_processors import reshape
 from adlframework.filters.general_filters import accept_label, ignore_label
 from adlframework.augmentations.image_augmentations import imgaug_augment
 ### Callbacks
@@ -33,7 +34,7 @@ val_retrieval = JsonFile(fp=abs_path+'val.json',
 
 ## Model
 net = medium_model(input_shape=(90, 125, 1),
-					target_shape=(1))
+					target_shape=(2,))
 
 ### Augmentation
 seq = iaa.Sequential(
@@ -45,22 +46,34 @@ seq = iaa.Sequential(
 )
 
 ## Controllers
-controllers = [partial(reshape, shape=(90, 125, 1)),
-				partial(imgaug_augment, sequence=seq)]
+def make_categorical(sample):
+    data, label = sample
+    categorical_label = np.zeros(2)
+    categorical_label[label['is_iceberg']] = 1
+    return data, categorical_label
 
+controllers = [partial(reshape, shape=(90, 125, 1)),
+				# partial(imgaug_augment, sequence=seq),
+        make_categorical]
+
+universal_options = {'workers': 1, 'verbosity':3}
 #### TRAINING DATASOURCE
 iceberg_trainds = DataSource(train_retrieval, ImageFileDataEntity,
-                  controllers = controllers + [partial(accept_label, labelnames="is_iceberg")])
+                  controllers = controllers + [partial(accept_label, labelnames="is_iceberg")],
+                  **universal_options)
 
 boat_trainds = DataSource(train_retrieval, ImageFileDataEntity,
-                  controllers = controllers + [partial(ignore_label, labelnames="is_iceberg")])
+                  controllers = controllers + [partial(ignore_label, labelnames="is_iceberg")],
+                  **universal_options)
 
 #### VALIDATION DATASOURCE
 iceberg_valds = DataSource(val_retrieval, ImageFileDataEntity,
-                  controllers = controllers + [partial(accept_label, labelnames="is_iceberg")])
+                  controllers = controllers + [partial(accept_label, labelnames="is_iceberg")],
+                  **universal_options)
 
 boat_valds = DataSource(val_retrieval, ImageFileDataEntity,
-                  controllers = controllers + [partial(ignore_label, labelnames="is_iceberg")])
+                  controllers = controllers + [partial(ignore_label, labelnames="is_iceberg")],
+                  **universal_options)
 
 ### Combining DataSources
 train_ds = iceberg_trainds + boat_trainds
@@ -73,9 +86,10 @@ callbacks = [ModelCheckpoint('weights.{epoch:02d}-{val_loss:.2f}.hdf5')]
 #### Define experiment
 exp = SimpleExperiment(train_datasource=train_ds,
 						validation_datasource=val_ds,
-						loss=KLD,
+						loss=categorical_crossentropy,
 						optimizer=Adadelta(),
 						network = net,
+            metrics=['acc'],
 						callbacks=callbacks)
 
 exp.run()
