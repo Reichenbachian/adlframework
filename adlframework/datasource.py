@@ -38,7 +38,7 @@ class DataSource():
 	'''
 
 	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, timeout=None,
-					prefilters=[], verbosity=logging.DEBUG, max_mem_percent=.95, workers=1, queue_size=None,
+					prefilters=[], verbosity=3, max_mem_percent=.95, workers=1, queue_size=None,
 					convert_batch_to_np=True, **kwargs):
 		#### PRE-INITIALIZATION CHECKS
 		assert type(controllers) is list, "Please make augmentors a list in all data sources"
@@ -47,7 +47,6 @@ class DataSource():
 		assert not (workers == 1 and queue_size != None), 'Queue_Size is only applicable to multiple workers. Try limiting memory with max_mem_percent.'
 
 		#### CLASS VARIABLE INITIALIZATION
-		logging.basicConfig(level=verbosity)
 		self.max_mem_percent = max_mem_percent
 		self.verbosity = verbosity	# 0: little to no debug, 1 some debug, 3 all debug.
 		self._retrieval = retrieval
@@ -179,6 +178,7 @@ class DataSource():
 						logging.error(e, exc_info=True)
 				self.list_pointer += 1
 			else:
+				# Multiprocessing: grab from worker queue
 				sample = self.sample_queue.get()
 				batch.append(sample)
 
