@@ -1,3 +1,5 @@
+### Data can be found here: https://www.kaggle.com/c/statoil-iceberg-classifier-challenge/data
+
 from functools import partial
 import pdb
 import os
