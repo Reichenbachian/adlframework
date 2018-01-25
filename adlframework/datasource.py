@@ -183,7 +183,7 @@ class DataSource():
 				batch.append(sample)
 
 			if self.list_pointer >= len(self._entities):
-				reset_queue()
+				self.reset_queue()
 		
 			# Check if we have enough memory to keep sample in memory
 			mem = psutil.virtual_memory()
