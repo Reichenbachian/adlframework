@@ -163,8 +163,8 @@ class DataSource():
 		batch_size = batch_size if batch_size != None else self.batch_size
 		batch = []
 		while len(batch) < batch_size: # Create a batch
-			entity = self._entities[self.list_pointer] # Grab next entity
 			if self.workers == 1:
+				entity = self._entities[self.list_pointer] # Grab next entity
 				try:
 					sample = entity.get_sample()
 					sample = self.process_sample(sample)
