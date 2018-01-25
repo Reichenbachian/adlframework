@@ -59,20 +59,20 @@ controllers = [partial(reshape, shape=(90, 125, 1)),
 universal_options = {'workers': 1, 'verbosity':3}
 #### TRAINING DATASOURCE
 iceberg_trainds = DataSource(train_retrieval, ImageFileDataEntity,
-                  controllers = controllers + [partial(accept_label, labelnames="is_iceberg")],
+                  controllers = [partial(accept_label, labelnames="is_iceberg")] + controllers,
                   **universal_options)
 
 boat_trainds = DataSource(train_retrieval, ImageFileDataEntity,
-                  controllers = controllers + [partial(ignore_label, labelnames="is_iceberg")],
+                  controllers = [partial(ignore_label, labelnames="is_iceberg")] + controllers,
                   **universal_options)
 
 #### VALIDATION DATASOURCE
 iceberg_valds = DataSource(val_retrieval, ImageFileDataEntity,
-                  controllers = controllers + [partial(accept_label, labelnames="is_iceberg")],
+                  controllers = [partial(accept_label, labelnames="is_iceberg")] + controllers,
                   **universal_options)
 
 boat_valds = DataSource(val_retrieval, ImageFileDataEntity,
-                  controllers = controllers + [partial(ignore_label, labelnames="is_iceberg")],
+                  controllers =  [partial(ignore_label, labelnames="is_iceberg")] + controllers,
                   **universal_options)
 
 ### Combining DataSources
@@ -91,5 +91,5 @@ exp = SimpleExperiment(train_datasource=train_ds,
 						network = net,
             metrics=['acc'],
 						callbacks=callbacks)
-
+pdb.set_trace()
 exp.run()
