@@ -177,6 +177,11 @@ class DataSource():
 						logging.error('Controller or sample Failure')
 						logging.error(e, exc_info=True)
 				self.list_pointer += 1
+				# Check if we have enough memory to keep sample in memory
+				mem = psutil.virtual_memory()
+				if mem.percent/100.0 > self.max_mem_percent:
+					del entity.data
+				del mem # Shouldn't be necessary, but just in case.
 			else:
 				# Multiprocessing: grab from worker queue
 				sample = self.sample_queue.get()
@@ -184,12 +189,6 @@ class DataSource():
 
 			if self.list_pointer >= len(self._entities):
 				self.reset_queue()
-		
-			# Check if we have enough memory to keep sample in memory
-			mem = psutil.virtual_memory()
-			if mem.percent/100.0 > self.max_mem_percent:
-				del entity.data
-			del mem # Shouldn't be necessary, but just in case.
 
 		data, labels = zip(*batch)
 		if self.convert_batch_to_np:
