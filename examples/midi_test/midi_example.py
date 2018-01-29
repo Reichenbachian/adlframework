@@ -8,7 +8,7 @@ import numpy as np
 from midi_net import midi_test
 from keras.optimizers import Adadelta
 from keras.losses import categorical_crossentropy
-from adlframework.experiment import Experiment
+from adlframework.experiment import SimpleExperiment
 ### Controllers
 from adlframework.processors.general_processors import crop, reshape, pdb_trace
 from adlframework.processors.lstm_processors import crop_and_label
@@ -51,7 +51,7 @@ net = midi_test(input_shape=(100, 88, 12, 11), target_shape=(5, 88, 12, 11))
 callbacks = [ModelCheckpoint('weights.{epoch:02d}-{val_loss:.2f}.hdf5')]
 
 ### Create and run experiment
-exp = Experiment(train_datasource=train_ds,
+exp = SimpleExperiment(train_datasource=train_ds,
 					validation_datasource=val_ds,
 					test_datasource=test_ds,
 					callbacks=callbacks,
