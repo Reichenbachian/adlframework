@@ -68,7 +68,7 @@ class DataSource():
 				self._entities = self._retrieval.load_from_cache()
 			else: # create cache otherwise
 				for id_ in retrieval.list():
-					self._entities.append(Entity(id_, retrieval, verbosity, **kwargs))
+					self._entities.append(Entity(unique_id=id_, retrieval=retrieval, verbosity=verbosity, **kwargs))
 				retrieval.cache()
 		shuffle(self._entities)
 
@@ -180,7 +180,7 @@ class DataSource():
 				# Check if we have enough memory to keep sample in memory
 				mem = psutil.virtual_memory()
 				if mem.percent/100.0 > self.max_mem_percent:
-					del entity.data
+					entity.data = None # Removing pointer should remove it from memory if no other references to it.
 				del mem # Shouldn't be necessary, but just in case.
 			else:
 				# Multiprocessing: grab from worker queue
