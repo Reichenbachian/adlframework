@@ -114,7 +114,7 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
         assert window_size == 'seconds' or window_size == 'frames', 'window_size may only be seconds or frames'
         assert timestamp_units == 'seconds' or window_units == 'frames', 'timestamp_units may only be seconds or frames'
         assert not (window_size == None and sampling_method == 'linear_interpolation'), 'If it is linear interpolating, a window_size must be provided.'
-        assert sampling_method == 'discrete_sample' or sampling_method == 'interpolate_sample', 'Only discrete_sample or interpolate_sample are implemented'
+        assert sampling_method == 'discrete' or sampling_method == 'linear_interpolation', 'Only discrete or linear_interpolation are implemented'
         self.padding = padding
         self.indexed = False
         self.sampling_method = sampling_method
@@ -228,9 +228,7 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
         sampled_label = None
         if self.sampling_method == 'linear_interpolation':
             sampled_data, sampled_label  = self.interpolate_sample()
-        else if self.sampling_method == 'discrete':
+        else self.sampling_method == 'discrete':
             sampled_data, sampled_label = self.discrete()
-        else:
-            raise Exception('Sampling method: 'str(self.sampling_method) + ' is not implemented. Check the docstring.')
 
         return sampled_data, sampled_label
