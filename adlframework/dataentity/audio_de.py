@@ -189,8 +189,11 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
         '''
         Samples continuously. Crossing over labels if necessary.
         For instance, one sample might be (4.4, 4.4+window_size*fs)
-        and the label for metric_1 will become the weighted sum of the
-        two closest labels to the start and end time.
+        and the label for metric_1 will become a weighted sum.
+
+        The weighted sum is computed as follows.
+        1) Get two nearest labels to start and end point
+        2) Compute mean of all labels between them inclusive
 
         -----------------------------------
         | timestamp | metric_1 | metric_1 |
@@ -205,14 +208,14 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
         # Get start and end time and data
         start_frame = int(np.random.random()*len(self.data))
         end_frame = start_frame + self.window_size
-        sampled_data = self.data[start_time:end_time]
+        sampled_data = self.data[start_frame:end_frame]
 
         # Create label
         start_timestamp = start_frame if self.timestamp_units == 'frames' else start_frame/self.fs
         end_timestamp = end_frame if self.timestamp_units == 'frames' else end_frame/self.fs
         start_label_i = (self.labels[self.tc]-start_timestamp).abs().argsort()[0]
         end_label_i = (self.labels[self.tc]-end_timestamp).abs().argsort()[0]
-        sample_label = self.labels.ix[[start_label_i, end_label_i]].mean()
+        sample_label = self.labels.drop(self.tc, axis=1)[start_label_i:end_label_i].mean() # Average two nearest labels. Also remove timestamps column.
 
         return sampled_data, sample_label
         
