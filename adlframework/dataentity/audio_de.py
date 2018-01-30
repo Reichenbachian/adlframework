@@ -228,7 +228,7 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
         sampled_label = None
         if self.sampling_method == 'linear_interpolation':
             sampled_data, sampled_label  = self.interpolate_sample()
-        else self.sampling_method == 'discrete':
+        else:
             sampled_data, sampled_label = self.discrete()
 
         return sampled_data, sampled_label
