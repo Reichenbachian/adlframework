@@ -97,18 +97,18 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
 
     '''
     # To-Do: Implement!
-    def __init__(self, window_size=None, padding='zeros',
-                    timestamp_units='seconds', window_units='seconds',
+    def __init__(self, window_size=None, timestamp_units='seconds', window_units='seconds',
                     sampling_method='discrete', timestamp_column='timestamp',
                     **kwargs):
         '''
-        TO-DO: Implement padding
+        TO-DO: Implement padding?
+            padding
+                - 'zeros': pad with zeros
+                - 'noise': pad with noise
         TO-DO: Implement filtering
 
         window_size: In seconds. If it is None, variable lengths will be returned.
-        padding
-            - 'zeros': pad with zeros
-            - 'noise': pad with noise
+        
         sampling_method(For information check class docstring):
             - 'linear_interpolation': combine i and i+1 label, if both are available(i.e. i+1 hasn't been removed by filter),
                                       and randomly sample between them.
@@ -119,7 +119,6 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
         assert timestamp_units == 'seconds' or window_units == 'frames', 'timestamp_units may only be seconds or frames'
         assert not (window_size == None and sampling_method == 'linear_interpolation'), 'If it is linear interpolating, a window_size must be provided.'
         assert sampling_method == 'discrete' or sampling_method == 'linear_interpolation', 'Only discrete or linear_interpolation are implemented'
-        self.padding = padding
         self.indexed = False
         self.sampling_method = sampling_method
         self.window_size = window_size
