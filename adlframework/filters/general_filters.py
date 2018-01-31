@@ -9,7 +9,7 @@ def min_array_shape(sample, min_shape=None):
     '''
     data, _ = sample
     return (len(min_shape) == len(data.shape)) and \
-    (all([min_shape[i] == None or data.shape[i] > min_shape[i] for i in range(len(min_shape))]))
+    (all([min_shape[i] == None or data.shape[i] >= min_shape[i] for i in range(len(min_shape))]))
 
 def ignore_label(sample, labelnames):
     """ Reject samples for which the value for any of labelnames is 1, accept otherwise"""
