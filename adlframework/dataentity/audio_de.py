@@ -108,7 +108,6 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
         TO-DO: Implement filtering
 
         window_size: In seconds. If it is None, variable lengths will be returned.
-        
         sampling_method(For information check class docstring):
             - 'linear_interpolation': combine i and i+1 label, if both are available(i.e. i+1 hasn't been removed by filter),
                                       and randomly sample between them.
@@ -137,7 +136,7 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
         ### Remove labels that are outside the range of start_time+window_size*fs
         if self.window_size:
             max_time = len(self.data) - self.window_size
-            max_time = max_time if self.timestamp_units == 'frames' else max_time/self.fs
+            max_time = max_time if self.timestamp_units == 'frames' else np.ceil(float(max_time)/self.fs)
             self.labels = self.labels[(self.labels[self.tc] < max_time) & (self.labels[self.tc] > 0)]
 
 
@@ -180,8 +179,10 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
         else:
             end_time = start_time + self.window_size
 
+        sampled_data = self.data[int(start_time):int(end_time)]
+
         # Create and return sample
-        return self.data[int(start_time):int(end_time)], sampled_label
+        return sampled_data, sampled_label
 
 
     def interpolate_sample(self):
@@ -212,8 +213,11 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
         # Create label
         start_timestamp = start_frame if self.timestamp_units == 'frames' else start_frame/self.fs
         end_timestamp = end_frame if self.timestamp_units == 'frames' else end_frame/self.fs
-        start_label_i = (self.labels[self.tc]-start_timestamp).abs().argsort()[0]
-        end_label_i = (self.labels[self.tc]-end_timestamp).abs().argsort()[0]
+        try:
+            start_label_i = (self.labels[self.tc]-start_timestamp).abs().argsort().iloc[0]
+            end_label_i = (self.labels[self.tc]-end_timestamp).abs().argsort().iloc[0]
+        except:
+            pdb.set_trace()
         sample_label = self.labels.drop(self.tc, axis=1)[start_label_i:end_label_i].mean() # Average two nearest labels. Also remove timestamps column.
 
         return sampled_data, sample_label
@@ -231,7 +235,7 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
             if self.window_units == 'seconds' and not self.converted_fs:
                 self.window_size = int(self.window_size*self.fs)
                 self.converted_fs = True # This check is necessary because this isn't always run once. In the case data is tossed for memory preservation.
-        if self.indexed:
+        if not self.indexed:
             self.index()
 
         sampled_data = None
@@ -240,5 +244,6 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
             sampled_data, sampled_label  = self.interpolate_sample()
         else:
             sampled_data, sampled_label = self.discrete_sample()
+
 
         return sampled_data, sampled_label

@@ -18,7 +18,7 @@ def pdb_trace(sample, targets=[], reverse=None):
     '''
     pdb.set_trace()
 
-def to_np_arr(sample, convert_data=True, convert_label=True):
+def to_np_arr(sample, convert_data=True, convert_label=False):
     '''
     Converts either or the data and the label of the sample to
     a numpy array.
@@ -86,14 +86,14 @@ def zeros(sample, shape):
     zeros[s] = data
     return zeros, label
 
-def reshape(sample, shape, reshape_label=False):
+def reshape(sample, shape, reshape_label=False, reshape_data=True):
     """
     Reshapes the input array to a desired output shape.
     """
     data, label = sample
     if reshape_label:
         label = label.reshape(shape)
-    else:
+    if reshape_data:
         data = data.reshape(shape)
     return data, label
 
