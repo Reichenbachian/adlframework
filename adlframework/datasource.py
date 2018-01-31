@@ -35,6 +35,10 @@ class DataSource():
 	-----------
 	 - '_entities' - a list of data entities
 	 - '_retrieval' - The retrieval for the data source
+
+
+	To-Do: Cache processed/augmented results?
+	To-Do: Compress memory cache?
 	'''
 
 	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, timeout=None,
