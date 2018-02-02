@@ -1,4 +1,7 @@
 # Change Log
+### February 2, 2018
+ - Added ARFF example
+
 ### January 31, 2018
  - Added audio example code
 
