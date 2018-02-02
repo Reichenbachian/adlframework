@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 from scipy.ndimage.filters import gaussian_filter1d
 from keras.utils import to_categorical
-import logging
 import pdb
+from adlframework.utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 pd.options.mode.chained_assignment = None
 

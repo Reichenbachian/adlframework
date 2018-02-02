@@ -1,7 +1,7 @@
 from keras.layers import Activation, Reshape
-import logging
+from adlframework.utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 class Net(object):
 	def __init__(self, **kwargs):
@@ -31,7 +31,7 @@ class Net(object):
 			if reshape_out_shape != None: # Add reshape layer to reshape
 				model.add(Reshape(reshape_out_shape))
 
-			# logger.log(logging.INFO, "Input shape to network is ", self.input_shape)
+			# logger.debug("Input shape to network is ", self.input_shape)
 			if self.softmax:
 				model.add(Activation('softmax'))
 			return model

@@ -4,7 +4,6 @@ import numpy as np
 import idlsave
 from adlframework.utils import get_logger
 
-
 logger = get_logger()
 
 class PlanetDataEntity(DataEntity):
@@ -58,6 +57,6 @@ class PlanetDataEntity(DataEntity):
             self.limb_darkening = [x.pnew[4] for x in bls][0]
             self.radius_ratio = [x.pnew[6] for x in bls][0]
         except Exception as e:
-            logger.exception("Failed to read downloaded file :" + self.get_cached_search_filename()+ ' ' +str(e))
+            logger.warn("Failed to read downloaded file :" + self.get_cached_search_filename()+ ' ' +str(e))
         return [self.period, self.t0, self.impact_parameter, self.limb_darkening, None, self.radius_ratio]
 

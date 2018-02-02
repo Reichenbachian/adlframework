@@ -15,9 +15,9 @@ class MNIST_retrieval(Retrieval):
     _return_type = 'np array'
     def __init__(self, mnist_data_location='./'):
         super(MNIST_retrieval, self).__init__()
-        logger.log(logging.INFO, 'Downloading mnist data...')
+        logger.info('Downloading mnist data...')
         self.mnist = fetch_mldata('MNIST original', data_home=mnist_data_location)
-        logger.log(logging.INFO, 'Done downloading mnist data...')
+        logger.info('Done downloading mnist data...')
 
     def get_data(self, id_):
         '''

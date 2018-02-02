@@ -1,19 +1,18 @@
 import pdb
 from random import shuffle
 import numpy as np
-import logging
 import copy
 from adlframework.utils import in_ipynb
 from datasource_union import DataSourceUnion
 import psutil
-
+from adlframework.utils import get_logger
 # Import corrent version of tqdm(jupyter notebook vs non)
 if in_ipynb():
 	from tqdm import tqdm_notebook as tqdm
 else:
 	from tqdm import tqdm
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 class DataSource():
 	'''
@@ -65,7 +64,7 @@ class DataSource():
 
 		#### RETRIEVAL INITIALIZATION
 		if retrieval == None:
-			logger.log(logging.INFO, 'retrieval is set to none. Assuming a single entity with random initialization.')
+			logger.info('retrieval is set to none. Assuming a single entity with random initialization.')
 			self._entities.append(Entity(0, **kwargs))
 		else:
 			if not ignore_cache and retrieval.is_cached(): # Read from cache
@@ -127,16 +126,16 @@ class DataSource():
 		### Prefilter
 		NUM_DASHES = 40
 		if len(self.prefilters) > 0:
-			logger.log(logging.INFO, 'Prefiltering entities')
+			logger.info('Prefiltering entities')
 		for i, pf in enumerate(self.prefilters):
-			logger.log(logging.INFO, '-'*NUM_DASHES+'Filter ' +str(i)+'-'*NUM_DASHES)
-			logger.log(logging.INFO, pf)
-			logger.log(logging.INFO, 'Before filter '+str(i)+', there are '+ str(len(self._entities))+' entities.')
+			logger.debug('-'*NUM_DASHES+'Filter ' +str(i)+'-'*NUM_DASHES)
+			logger.debug(pf)
+			logger.debug('Before filter '+str(i)+', there are '+ str(len(self._entities))+' entities.')
 			self._entities = filter(pf, tqdm(self._entities))
-			logger.log(logging.INFO, 'After filter '+str(i)+', there are '+ str(len(self._entities))+' entities.')
+			logger.debug('After filter '+str(i)+', there are '+ str(len(self._entities))+' entities.')
 
 	def reset_queue(self):
-		logger.log(logging.INFO, 'Shuffling the datasource')
+		logger.info('Shuffling the datasource')
 		shuffle(self._entities)
 		self.list_pointer = 0
 
@@ -207,9 +206,9 @@ class DataSource():
 		id_set = set(id_list)
 		def in_set(e):
 			return e.unique_id in id_set
-		logger.log(logging.INFO, 'Filtering by id list. Size pre-filter is'+str(len(self._entities)))
+		logger.info('Filtering by id list. Size pre-filter is'+str(len(self._entities)))
 		self._entities = filter(in_set, self._entities)
-		logger.log(logging.INFO, 'Done filtering. Size post-filter is'+str(len(self._entities)))
+		logger.info('Done filtering. Size post-filter is'+str(len(self._entities)))
 
 	def save_ids(self, name):
 		'''
@@ -225,7 +224,7 @@ class DataSource():
 		Returns: datasource_1, datasource_2
 				 where len(datasource_1)/len(ds) approximately equals split_percent
 		'''
-		logger.log(logging.WARNING, 'Using split may cause datasource specific training. (For instance, overfitting on a single speaker.)')
+		logger.warn('Using split may cause datasource specific training. (For instance, overfitting on a single speaker.)')
 		break_off = int(len(ds1._entities)*split_percent)
 		shuffle(ds1._entities)
 		### To-Do: Fix below inefficiency

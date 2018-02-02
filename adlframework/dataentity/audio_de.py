@@ -13,10 +13,10 @@ import scipy.io.wavfile as wav
 from adlframework._dataentity import DataEntity
 import random
 import numpy as np
-import logging
 import pdb
+from adlframework.utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 class AudioFileDataEntity(DataEntity):
     '''

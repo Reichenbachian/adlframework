@@ -1,10 +1,8 @@
 from adlframework._dataentity import DataEntity
 import numpy as np
-import logging
+from adlframework.utils import get_logger
 
-
-
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 class NoiseDataEntity(DataEntity):
     

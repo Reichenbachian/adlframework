@@ -1,9 +1,9 @@
 from adlframework._dataentity import DataEntity
-import logging
 import arff
 import pdb
+from adlframework.utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 class ARFFDataEntity(DataEntity):
     '''

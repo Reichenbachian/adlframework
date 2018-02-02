@@ -4,31 +4,29 @@ Represents a singular experiment
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import attr
-import logging
 from keras.callbacks import TensorBoard, LambdaCallback
 import hashlib
 from random import random
 import pdb
 from tqdm import tqdm
+from adlframework.utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 class __Experiment__(object):
 	def compile_network(self):
 		if self.loss == None:
-			logger.log(
-				logging.WARN, 'No loss is defined. Will default to mse. Be warned that leaving this default can be a bad idea!!!')
+			logger.warn('No loss is defined. Will default to mse. Be warned that leaving this default can be a bad idea!!!')
 			self.loss = 'mse'
 		if self.optimizer == None:
-			logger.log(
-				logging.WARN, 'No optimizer is defined. Will default to rmsprop.')
+			logger.warn('No optimizer is defined. Will default to rmsprop.')
 			self.optimizer = 'rmsprop'
 		self.network = self.network.build_model()
 		assert self.network != None, 'Make sure to return model in build_model construction'
 		self.network.compile(optimizer=self.optimizer,
 							 loss=self.loss,
 							 metrics=self.metrics)
-		logger.log(logging.INFO, 'Compiled network.')
+		logger.info('Compiled network.')
 
 @attr.s
 class SimpleExperiment(__Experiment__):

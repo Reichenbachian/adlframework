@@ -3,12 +3,12 @@ Represents the conglomeration of multiple data sources
 union = ds1 + ds2
 union = ds1 + different_union
 '''
-import logging
 import math
 import pdb
 import numpy as np
+from adlframework.utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 class DataSourceUnion():
 

@@ -1,9 +1,9 @@
 from adlframework._dataentity import DataEntity
 from madmom.utils.midi import MIDIFile
 from madmom.utils import suppress_warnings
-import logging
+from adlframework.utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 class MidiDataEntity(DataEntity):
     '''

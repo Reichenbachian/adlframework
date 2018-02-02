@@ -1,7 +1,7 @@
 from adlframework._dataentity import DataEntity
-import logging
+from adlframework.utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 class ImageFileDataEntity(DataEntity):
     '''
