@@ -61,7 +61,6 @@ class DataSource():
 		self.timeout = timeout
 		self.workers = workers
 		self.convert_batch_to_np = convert_batch_to_np
-
 		#### RETRIEVAL INITIALIZATION
 		if retrieval == None:
 			logger.info('retrieval is set to none. Assuming a single entity with random initialization.')
@@ -112,8 +111,8 @@ class DataSource():
 					self.sample_queue.put(sample)
 			except Exception as e:
 				if self.verbosity == 3:
-					logging.error('Controller or sample Failure')
-					logging.error(e, exc_info=True)
+					logger.error('Controller or sample Failure')
+					logger.error(e, exc_info=True)
 
 
 
@@ -177,8 +176,8 @@ class DataSource():
 
 				except Exception as e:
 					if self.verbosity == 3:
-						logging.error('Controller or sample Failure')
-						logging.error(e, exc_info=True)
+						logger.error('Controller or sample Failure')
+						logger.error(e, exc_info=True)
 				self.list_pointer += 1
 				# Check if we have enough memory to keep sample in memory
 				mem = psutil.virtual_memory()

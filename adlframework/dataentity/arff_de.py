@@ -15,7 +15,7 @@ class ARFFDataEntity(DataEntity):
         Receives a file path from retrieval and loads/returns data.
         """
         f = self.retrieval.get_data(self.unique_id)
-        self.data = arff.load(f)
+        self.data = [x for x in arff.load(f)]
         return self.data
 
     def get_sample(self):
