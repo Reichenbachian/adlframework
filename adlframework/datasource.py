@@ -123,7 +123,7 @@ class DataSource():
 		### To-Do: Implement Remove_segment.
 		'''
 		### Prefilter
-		NUM_DASHES = 40
+		NUM_DASHES = 4l0
 		if len(self.prefilters) > 0:
 			logger.info('Prefiltering entities')
 		for i, pf in enumerate(self.prefilters):
@@ -179,11 +179,13 @@ class DataSource():
 						logger.error('Controller or sample Failure')
 						logger.error(e, exc_info=True)
 				self.list_pointer += 1
+
 				# Check if we have enough memory to keep sample in memory
 				mem = psutil.virtual_memory()
 				if mem.percent/100.0 > self.max_mem_percent:
 					entity.data = None # Removing pointer should remove it from memory if no other references to it.
 				del mem # Shouldn't be necessary, but just in case.
+
 			else:
 				# Multiprocessing: grab from worker queue
 				sample = self.sample_queue.get()
@@ -251,7 +253,7 @@ class DataSource():
 		if isinstance(other_dsa, DataSource):
 			return DataSourceUnion([self, other_dsa])
 		elif isinstance(other_dsa, DataSourceUnion):
-			dss = other_dsa.datasources
+			dss = other_dsa.datasources[:] # Copy it
 			dss.extend(self)
 			return DataSourceUnion(dss)
 		else:

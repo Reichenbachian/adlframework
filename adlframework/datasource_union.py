@@ -46,3 +46,16 @@ class DataSourceUnion():
 				batch_y.extend(batch[1])
 			return np.array(batch_X), np.array(batch_y)
 
+	def __add__(self, other_dsa):
+		"""
+		Combines either datasource_union +  datasource_union or
+		datasource_union + datasource.
+		"""
+		if isinstance(other_dsa, DataSource):
+			return DataSourceUnion(self.datasources[:] + other_dsa)
+		elif isinstance(other_dsa, DataSourceUnion):
+			dss = other_dsa.datasources[:]  # Copy it
+			return DataSourceUnion(dss+self.datasources)
+		else:
+			raise Exception("Can only combine DataSource or DataSourceUnion objects!")
+
