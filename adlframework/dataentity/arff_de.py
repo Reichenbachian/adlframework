@@ -1,6 +1,6 @@
 from adlframework._dataentity import DataEntity
 import arff
-import pdb
+import numpy as np
 from adlframework.utils import get_logger
 
 logger = get_logger()
@@ -15,7 +15,7 @@ class ARFFDataEntity(DataEntity):
         Receives a file path from retrieval and loads/returns data.
         """
         f = self.retrieval.get_data(self.unique_id)
-        self.data = [x for x in arff.load(f)]
+        self.data = np.array([x for x in arff.load(f)])
         return self.data
 
     def get_sample(self):
@@ -23,8 +23,8 @@ class ARFFDataEntity(DataEntity):
             Given a numpy array of returned sample, it returns a sample.
         '''
         if self.labels is None: # Read labels into memory.
-            self.labels = self.retrieval.get_label(self.unique_id)
+            self.label = self.retrieval.get_label(self.unique_id).iloc[0]
         if self.data is None: # Read data into memory.
             self.get_data()
-        return self.data, self.labels.iloc[0]
+        return self.data, self.label
         
