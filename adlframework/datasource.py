@@ -217,8 +217,7 @@ class DataSource():
 		'''
 		open(name, 'w').write('\n'.join([str(x.unique_id) for x in self._entities]))
 
-	@staticmethod
-	def split(ds1, split_percent=.5):
+	def split(self, split_percent=.5):
 		'''
 		Splits one datasource into two
 
@@ -226,12 +225,13 @@ class DataSource():
 				 where len(datasource_1)/len(ds) approximately equals split_percent
 		'''
 		logger.warn('Using split may cause datasource specific training. (For instance, overfitting on a single speaker.)')
-		break_off = int(len(ds1._entities)*split_percent)
-		shuffle(ds1._entities)
+		break_off = int(len(self._entities)*split_percent)
 		### To-Do: Fix below inefficiency
-		ds2 = copy.copy(ds1)
-		ds2._entities = ds1._entities[break_off:]
-		ds1._entities = ds1._entities[:break_off]
+		ds1 = copy.copy(self)
+		shuffle(ds1._entities)
+		ds2 = copy.copy(self)
+		ds2._entities = self._entities[break_off:]
+		ds1._entities = self._entities[:break_off]
 		return ds1, ds2
 
 	def __iter__(self):

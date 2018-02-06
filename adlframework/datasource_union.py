@@ -7,6 +7,8 @@ import math
 import pdb
 import numpy as np
 from adlframework.utils import get_logger
+import datasource
+import copy
 
 logger = get_logger()
 
@@ -19,6 +21,22 @@ class DataSourceUnion():
 		self.datasources = datasources
 		self.batch_sizes = [x.batch_size for x in self.datasources]
 		self.batch_size = sum(self.batch_sizes) # batch size of union is the sum of all its subsidiaries
+
+	def split(self, split_percent=.5):
+		'''
+		Splits one DataSourceUnions into two
+
+		To-Do: Write better comment and make more efficient
+		'''
+		dss1 = copy.copy(self)
+		dss2 = copy.copy(self)
+		dss1.datasources = []
+		dss2.datasources = []
+		for ds in self.datasources:
+			ds1, ds2 = ds.split(split_percent)
+			dss1.datasources.append(ds1)
+			dss2.datasources.append(ds2)
+		return dss1, dss2
 
 	def next(self, percentages=None):
 		'''
@@ -51,8 +69,8 @@ class DataSourceUnion():
 		Combines either datasource_union +  datasource_union or
 		datasource_union + datasource.
 		"""
-		if isinstance(other_dsa, DataSource):
-			return DataSourceUnion(self.datasources[:] + other_dsa)
+		if isinstance(other_dsa, datasource.DataSource):
+			return DataSourceUnion(self.datasources[:]+[other_dsa])
 		elif isinstance(other_dsa, DataSourceUnion):
 			dss = other_dsa.datasources[:]  # Copy it
 			return DataSourceUnion(dss+self.datasources)
