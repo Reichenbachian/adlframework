@@ -3,7 +3,7 @@
 *.DS_Store
 build/*
 venv/*
-*local_cache/*
+*local_cache*
 
 ### DL Files
 *.hdf*
