@@ -1,9 +1,6 @@
 ### Usual
 *.pyc
 *.DS_Store
-build/*
-venv/*
-*local_cache*
 
 ### DL Files
 *.hdf*
@@ -11,6 +8,10 @@ venv/*
 ### Common Folders
 *mldata*
 *exps*
+*.ipynb_checkpoints*
+*local_cache*
+*venv*
+*build*
 
 ### Data Types
 *.json
