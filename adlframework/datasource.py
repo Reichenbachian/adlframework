@@ -123,7 +123,7 @@ class DataSource():
 		### To-Do: Implement Remove_segment.
 		'''
 		### Prefilter
-		NUM_DASHES = 4l0
+		NUM_DASHES = 40
 		if len(self.prefilters) > 0:
 			logger.info('Prefiltering entities')
 		for i, pf in enumerate(self.prefilters):
