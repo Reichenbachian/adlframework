@@ -21,8 +21,9 @@ def midi_to_np(sample, targets=[], reverse=None):
 chro = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b']
 chromatic = [chro[x%len(chro)]+str(x//len(chro)) for x in range(88)]
 i_to_note = {0: "Whole",1: "Half",2: "Quarter",3: "Eighth",4: "Sixteenth",5: "Third",6: "Sixth",7: "Seventh",8: "Dotted Whole",9: "Dotted Half",10: "Dotted Quarter",11: "Chord"}
-possible_durations = np.array([4, 2, 1, .5, .25, 1/3.0, 2/3.0, 4/7.0, 6, 3, 1.25])
+possible_durations = [4, 2, 1, .5, .25, 1/3.0, 2/3.0, 4/7.0, 6, 3, 1.25]
 possible_onsets = possible_durations + [0]
+possible_durations, possible_onsets = np.array(possible_durations), np.array(possible_onsets)
 def notes_to_classification(sample):
 	'''
 	Converts continuous onset and duration times to the nearest note value.
