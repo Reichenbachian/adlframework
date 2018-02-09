@@ -1,14 +1,24 @@
 from adlframework.cache import Cache
 import numpy as np
 import pdb
+import pickle
 
 class RegularNPArrCache(Cache):
-	def __init__(self):
+	'''
+	TO-DO: Written for 1-d. Generalize to N-D.
+	'''
+	def __init__(self, cache_file=None):
 		self.data = None
 		self.labels = None
 		self.id_to_index = {}
-		self.size = -1
+		self.data_size = -1
+		self.label_size = -1
+		self.c_index = 1 # Location of end of array
+		self.cache_file = cache_file
+		if cache_file is not None:
+			self.load()
 
+	''' Necessary classes '''
 	def has(self, id_):
 		'''
 		Checks if cached. In this format to maintain O(1) lookup.
@@ -22,22 +32,75 @@ class RegularNPArrCache(Cache):
 	def cache(self, id_, data, label):
 		# Warning! Inefficient. Copying memory over each time.
 		# To-Do: Initialize block of memory and don't go over or under
-		if self.size == -1:
-			self.size = len(data)
+		### Check sizes
+		if self.data_size == -1: # Data
+			self.data_size = len(data)
 		else:
-			assert(self.size) == len(data), 'Variable Lengths were received to RegularNPArrCache cache!'
-		if type(self.data) is None:
+			assert(self.data_size) == len(data), 'Variable Lengths data segments were received to RegularNPArrCache cache!'
+		if self.label_size == -1: # Label
+			self.label_size = len(label)
+		else:
+			assert(self.label_size) == len(label), 'Variable Lengths labels were received to RegularNPArrCache cache!'
+		### Read into cache
+		if type(self.data) == type(None):
 			self.data = np.array([data])
-			self.labels = np.array([labels])
+			self.labels = np.array([label])
 		else:
-			pdb.set_trace()
-			self.data = np.vstack([self.data, data])
-			self.labels = np.vstack([self.labels, label])
+			assert len(self.data) == len(self.labels), "Internal error in RegularNPArrCache"
+			try:
+				if self.c_index >= len(self.data):
+					self.double_arr_size()
+				self.data[self.c_index] = data
+				self.labels[self.c_index] = label
+				self.c_index += 1
+			except Exception as e:
+				pdb.set_trace()
 		self.id_to_index[id_] = len(self.data) - 1
-		assert len(self.data) == len(self.labels), "Internal error in RegularNPArrCache"
 		return True
-
 
 	def retrieve(self, id_):
 		idx = self.id_to_index[id_]
 		return self.data[idx], self.label[idx]
+
+
+	def save(self):
+		'''
+		Saves Object
+		'''
+		if self.cache_file != None:
+			self.crop_excess()
+			np.save(self.cache_file+'_data', self.data, allow_pickle=True, fix_imports=True)
+			np.save(self.cache_file+'_label', self.data, allow_pickle=True, fix_imports=True)
+			pickle.dump( self.id_to_index, open(self.cache_file+'_dict', "wb" ))
+
+	def load(self):
+		'''
+		Saves data numpy array to a file.
+		Currently, only saves data.
+		To-Do: save labels too.
+		'''
+		import pickle
+		import os
+		dtf = self.cache_file+'_data'
+		lf = self.cache_file+'_label'
+		df = self.cache_file+'_dict'
+		if self.cache_file != None and os.path.exists(dtf) and os.path.exists(lf) and os.path.exists(df):
+			self.data = np.load(dtf)
+			self.labels = np.load(lf)
+			pickle.loads(open( "save.p", "wb" ))
+
+
+	''' Extra Classes '''
+	def crop_excess(self):
+		self.data = self.data[:c_index]
+		self.labels = self.labels[:c_index]
+
+	def double_arr_size(self):
+		new_d_shape = tuple([val if i != 0 else val*2 for i, val in enumerate(self.data.shape)])
+		new_l_shape = tuple([val if i != 0 else val*2 for i, val in enumerate(self.labels.shape)])
+		self.new_data = np.zeros(new_d_shape)
+		self.new_labels = np.zeros(new_l_shape)
+		self.new_data[:len(self.data)] = self.data
+		self.new_labels[:len(self.labels)] = self.labels
+		self.data = self.new_data
+		self.labels = self.new_labels

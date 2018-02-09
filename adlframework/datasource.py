@@ -43,7 +43,7 @@ class DataSource():
 
 	def __init__(self, retrieval, DataEntity, controllers=[], ignore_retrieval_cache=False,
 					batch_size=30, timeout=None, prefilters=[], verbosity=3, max_mem_percent=.95, workers=1, queue_size=None,
-					convert_batch_to_np=True, **kwargs):
+					convert_batch_to_np=True, preload_memory=False, **kwargs):
 		#### PRE-INITIALIZATION CHECKS
 		assert type(controllers) is list, "Please make augmentors a list in all data sources"
 		assert type(prefilters) is list, "Please make augmentors a list in all data sources"
@@ -67,6 +67,11 @@ class DataSource():
 		self.cache_location = self.initialize_cache_location()
 		self.initialize_retrieval(ignore_retrieval_cache)
 		self.__prefilter()
+		if preload_memory:
+			for id_ in tqdm(self._entity_ids, leave=False):
+				self.process_id(id_, just_cache=True)
+			self.cache.save()
+
 		if self.workers > 1:
 			self.initialize_multiprocessing(queue_size)
 
@@ -78,13 +83,13 @@ class DataSource():
 		'''
 		Finds cache in controllers, if present.
 		'''
-		cache_locations = [issubclass(type(x), type(Cache)) for x in self.controllers]
+		cache_locations = [issubclass(x.__class__, Cache) for x in self.controllers]
 		assert sum(cache_locations) <= 1, "There should only be one cache object in controllers."     
 		try:
 			cache_index = cache_locations.index(True)
 		except ValueError:
 			return -1
-		self.cache = self.controllers[cache_index]() # To-Do: Add arguments to cache
+		self.cache = self.controllers[cache_index]
 		return cache_index
 
 	def initialize_multiprocessing(self, queue_size):
@@ -159,7 +164,7 @@ class DataSource():
 		shuffle(self._entity_ids)
 		self.list_pointer = 0
 
-	def process_id(self, id_):
+	def process_id(self, id_, just_cache=False):
 		'''
 		Augments and processes a sample.
 		A sample goes through a single augmentor(which may be a list of augmentors [aug1, aug2, ...])
@@ -179,8 +184,10 @@ class DataSource():
 		### Processor
 		while c_cont < len(self.controllers):
 			# Cache if present
-			if c_cont == self.cache_location:
+			if c_cont == self.cache_location:				
 				self.cache.cache(id_, sample[0], sample[1])
+				if just_cache:
+					return
 			else:
 				# Run process
 				controller = self.controllers[c_cont]
