@@ -9,13 +9,7 @@ class MidiDataEntity(DataEntity):
     '''
     Represents a Midi data entitity.
     '''
-
-    def _read_raw(self):
-        """
-        Read from raw midi data.
-        """
-        raise NotImplemented('Reading from raw midi data is not implemented.')
-
+    
     @suppress_warnings
     def _read_file(self):
         """
