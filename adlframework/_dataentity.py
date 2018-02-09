@@ -23,16 +23,12 @@ Optional Parameters
 '''
 
 class DataEntity(object):
-	def __init__(self, unique_id, retrieval, verbosity, sampler=None, backend='default'):
+	def __init__(self, retrieval, verbosity, backend='default'):
 		self.verbosity = verbosity
-		self.unique_id = unique_id
 		self.retrieval = retrieval
-		self.sampler = sampler
 		self.backend = backend
-		self.data = None
-		self.labels = None
 
-	def _read_raw(self):
+	def _read_raw(self, id_):
 		"""
 		Should read the data directly from raw data.
 		This is file dependent. It might be raw mp4 data
@@ -40,20 +36,20 @@ class DataEntity(object):
 		"""
 		raise NotImplemented('Reading from raw data is not implemented in %s.' % self.__class__)
 
-	def _read_np(self):
+	def _read_np(self, id_):
 		"""
 		Should read the data directly from a numpy array. 
 		i.e: The retrieval will return a numpy array.
 		"""
 		raise NotImplemented('Reading from numpy data is not implemented in %s.' % self.__class__)
 
-	def _read_file(self):
+	def _read_file(self, id_):
 		"""
 		Should read the data directly from a file.
 		"""
 		raise NotImplemented('Reading from a file is not implemented in %s.' % self.__class__)
 
-	def get_sample(self):
+	def get_sample(self, id_):
 		"""
 		Returns a sample.
 		THERE IS NO GUARANTEE THAT THIS SAMPLE OR LABEL IS THE SAME EVERY TIME.
@@ -80,15 +76,15 @@ class DataEntity(object):
 				if hasattr(self, 'remove_segment'):
 					self.remove_segment(i)
 
-	def get_data(self):
+	def get_data(self, id_):
 		"""
 		Decides whether to read from a file or from raw based on retrieval and returns output.
 		"""
 		if self.retrieval.return_type().lower() == 'np array':
-			return self._read_np()
+			return self._read_np(id_)
 		elif self.retrieval.return_type().lower() == 'file path':
-			return self._read_file()
+			return self._read_file(id_)
 		elif self.retrieval.return_type().lower() == 'raw':
-			return self._read_raw()
+			return self._read_raw(id_)
 		else:
 			raise NotImplementedError("Retrieval's return type not supported.")

@@ -6,6 +6,7 @@ from adlframework.utils import in_ipynb
 from datasource_union import DataSourceUnion
 import psutil
 from adlframework.utils import get_logger
+from adlframework.cache import Cache
 # Import corrent version of tqdm(jupyter notebook vs non)
 if in_ipynb():
 	from tqdm import tqdm_notebook as tqdm
@@ -32,7 +33,7 @@ class DataSource():
 
 	Attributes
 	-----------
-	 - '_entities' - a list of data entities
+	 - '_entity_ids' - a list of data entity ids
 	 - '_retrieval' - The retrieval for the data source
 
 
@@ -40,8 +41,8 @@ class DataSource():
 	To-Do: Compress memory cache?
 	'''
 
-	def __init__(self, retrieval, Entity, controllers=[], ignore_cache=False, batch_size=30, timeout=None,
-					prefilters=[], verbosity=3, max_mem_percent=.95, workers=1, queue_size=None,
+	def __init__(self, retrieval, DataEntity, controllers=[], ignore_retrieval_cache=False,
+					batch_size=30, timeout=None, prefilters=[], verbosity=3, max_mem_percent=.95, workers=1, queue_size=None,
 					convert_batch_to_np=True, **kwargs):
 		#### PRE-INITIALIZATION CHECKS
 		assert type(controllers) is list, "Please make augmentors a list in all data sources"
@@ -55,46 +56,64 @@ class DataSource():
 		self._retrieval = retrieval
 		self.controllers = controllers
 		self.prefilters = prefilters
-		self._entities = []
+		self._entity_ids = []
 		self.batch_size = batch_size
 		self.list_pointer = 0
 		self.timeout = timeout
 		self.workers = workers
 		self.convert_batch_to_np = convert_batch_to_np
-		#### RETRIEVAL INITIALIZATION
-		if retrieval == None:
-			logger.info('retrieval is set to none. Assuming a single entity with random initialization.')
-			self._entities.append(Entity(0, **kwargs))
-		else:
-			if not ignore_cache and retrieval.is_cached(): # Read from cache
-				self._entities = self._retrieval.load_from_cache()
-			else: # create cache otherwise
-				for id_ in retrieval.list():
-					self._entities.append(Entity(unique_id=id_, retrieval=retrieval, verbosity=verbosity, **kwargs))
-				retrieval.cache()
-		shuffle(self._entities)
+		self.DE = DataEntity(retrieval, verbosity, **kwargs)
 
-		#### PREFILTERS
+		self.cache_location = self.initialize_cache_location()
+		self.initialize_retrieval(ignore_retrieval_cache)
 		self.__prefilter()
-
-		#### MULTIPROCESSING INITIALIZATION
 		if self.workers > 1:
-			from multiprocessing import Process, Queue
-			self.entity_queue = Queue(queue_size) # Stores entites. Not list indices.
-			self.sample_queue = Queue(queue_size)
-			Process(target=self.async_fill_queue).start()
-			for _ in range(self.workers):
-				Process(target=self.async_add_to_sample_queue).start()
+			self.initialize_multiprocessing(queue_size)
 
 
 		#### POST-INITIALIZATION CHECKS
-		assert len(self._entities) > 0, "Cannot initialize an empty data source"
+		assert len(self._entity_ids) > 0, "Cannot initialize an empty data source"
+
+	def initialize_cache_location(self):
+		'''
+		Finds cache in controllers, if present.
+		'''
+		cache_locations = [issubclass(type(x), type(Cache)) for x in self.controllers]
+		assert sum(cache_locations) <= 1, "There should only be one cache object in controllers."     
+		try:
+			cache_index = cache_locations.index(True)
+		except ValueError:
+			return -1
+		self.cache = self.controllers[cache_index]() # To-Do: Add arguments to cache
+		return cache_index
+
+	def initialize_multiprocessing(self, queue_size):
+		from multiprocessing import Process, Queue
+		self.entity_queue = Queue(queue_size) # Stores entites. Not list indices.
+		self.sample_queue = Queue(queue_size)
+		Process(target=self.async_fill_queue).start()
+		for _ in range(self.workers):
+			Process(target=self.async_add_to_sample_queue).start()
+
+	def initialize_retrieval(self, ignore_retrieval_cache):
+		#### RETRIEVAL INITIALIZATION
+		if self._retrieval == None:
+			logger.info('retrieval is set to none. Assuming a single entity with random initialization.')
+			self._entity_ids.append(0)
+		else:
+			if not ignore_retrieval_cache and self._retrieval.is_cached(): # Read from cache
+				self._entity_ids = self._retrieval.load_from_cache()
+			else: # create cache otherwise
+				for id_ in self._retrieval.list():
+					self._entity_ids.append(id_)
+				self._retrieval.cache()
+		shuffle(self._entity_ids)
 
 	def async_fill_queue(self):
 		while not self.sample_queue.full(): # Worst case: Very fast processor, very large queue. Then slow first load.
-			self.entity_queue.put(self._entities[self.list_pointer])
+			self.entity_queue.put(self._entity_ids[self.list_pointer])
 			self.list_pointer += 1
-			if self.list_pointer >= len(self._entities):
+			if self.list_pointer >= len(self._entity_ids):
 				self.reset_queue()
 
 	def async_add_to_sample_queue(self):
@@ -104,9 +123,8 @@ class DataSource():
 		'''
 		while True:
 			try:
-				entity = self.entity_queue.get()
-				sample = entity.get_sample()
-				sample = self.process_sample(sample)
+				id_ = self.entity_queue.get()
+				sample = self.process_id(id_)
 				if sample: # If sample is processed and acceptable, append to queue
 					self.sample_queue.put(sample)
 			except Exception as e:
@@ -127,30 +145,50 @@ class DataSource():
 		if len(self.prefilters) > 0:
 			logger.info('Prefiltering entities')
 		for i, pf in enumerate(self.prefilters):
-			logger.debug('-'*NUM_DASHES+'Filter ' +str(i)+'-'*NUM_DASHES)
-			logger.debug(pf)
-			logger.debug('Before filter '+str(i)+', there are '+ str(len(self._entities))+' entities.')
-			self._entities = filter(pf, tqdm(self._entities))
-			logger.debug('After filter '+str(i)+', there are '+ str(len(self._entities))+' entities.')
+			logger.info('-'*NUM_DASHES+'Filter '+str(i)+'-'*NUM_DASHES)
+			logger.info(pf)
+			logger.info('Before filter '+str(i)+', there are '+ str(len(self._entity_ids))+' entities.')
+			def filter_wrapper(item):
+				return pf(self.DE, item)
+			## Pass the tuple DE, id to a filter.
+			self._entity_ids = filter(filter_wrapper, tqdm(self._entity_ids))
+			logger.info('After filter '+str(i)+', there are '+ str(len(self._entity_ids))+' entities.')
 
 	def reset_queue(self):
 		logger.info('Shuffling the datasource')
-		shuffle(self._entities)
+		shuffle(self._entity_ids)
 		self.list_pointer = 0
 
-	def process_sample(self, sample):
+	def process_id(self, id_):
 		'''
 		Augments and processes a sample.
 		A sample goes through a single augmentor(which may be a list of augmentors [aug1, aug2, ...])
 			For instance, augmentors may be [aug1, aug2, [aug3, aug4]] and it may choose aug1, aug2, or [aug3, aug4].
 		A sample goes through every processor.
 		'''
+		c_cont = 0
+		sample = None
+
+		### Read from cache
+		if self.cache_location != -1 and self.cache.has(id_):
+			c_cont = self.cache_location
+			sample = self.cache.retrieve(id_)
+		else:
+			sample = self.DE.get_sample(id_)
+
 		### Processor
-		for controller in self.controllers:
-			tmp = controller(sample)
-			sample = sample if tmp == True else tmp
-			if sample == False:
-				return False
+		while c_cont < len(self.controllers):
+			# Cache if present
+			if c_cont == self.cache_location:
+				self.cache.cache(id_, sample[0], sample[1])
+			else:
+				# Run process
+				controller = self.controllers[c_cont]
+				tmp = controller(sample)
+				sample = sample if tmp == True else tmp
+				if sample == False:
+					return False
+			c_cont += 1
 		return sample
 
 	def next(self, batch_size=None):
@@ -166,10 +204,9 @@ class DataSource():
 		batch = []
 		while len(batch) < batch_size: # Create a batch
 			if self.workers == 1:
-				entity = self._entities[self.list_pointer] # Grab next entity
+				id_ = self._entity_ids[self.list_pointer] # Grab next entity
 				try:
-					sample = entity.get_sample()
-					sample = self.process_sample(sample)
+					sample = self.process_id(id_)
 					if sample: # Only add to batch if it passes all per sample filters
 						# To-Do: Somehow prevent redundant rejections.
 						batch.append(sample)
@@ -180,18 +217,12 @@ class DataSource():
 						logger.error(e, exc_info=True)
 				self.list_pointer += 1
 
-				# Check if we have enough memory to keep sample in memory
-				mem = psutil.virtual_memory()
-				if mem.percent/100.0 > self.max_mem_percent:
-					entity.data = None # Removing pointer should remove it from memory if no other references to it.
-				del mem # Shouldn't be necessary, but just in case.
-
 			else:
 				# Multiprocessing: grab from worker queue
 				sample = self.sample_queue.get()
 				batch.append(sample)
 
-			if self.list_pointer >= len(self._entities):
+			if self.list_pointer >= len(self._entity_ids):
 				self.reset_queue()
 
 		data, labels = zip(*batch)
@@ -199,23 +230,6 @@ class DataSource():
 			labels = np.array(labels)
 			data = np.array(data)
 		return data, labels  # Equivalent to data, labels
-
-	def filter_ids(self, id_list):
-		'''
-		Filters by a list of ids
-		'''
-		id_set = set(id_list)
-		def in_set(e):
-			return e.unique_id in id_set
-		logger.info('Filtering by id list. Size pre-filter is'+str(len(self._entities)))
-		self._entities = filter(in_set, self._entities)
-		logger.info('Done filtering. Size post-filter is'+str(len(self._entities)))
-
-	def save_ids(self, name):
-		'''
-		Saves a list of newline delimiated ids.
-		'''
-		open(name, 'w').write('\n'.join([str(x.unique_id) for x in self._entities]))
 
 	def split(self, split_percent=.5):
 		'''
@@ -225,13 +239,13 @@ class DataSource():
 				 where len(datasource_1)/len(ds) approximately equals split_percent
 		'''
 		logger.warn('Using split may cause datasource specific training. (For instance, overfitting on a single speaker.)')
-		break_off = int(len(self._entities)*split_percent)
+		break_off = int(len(self._entity_ids)*split_percent)
 		### To-Do: Fix below inefficiency
 		ds1 = copy.copy(self)
-		shuffle(ds1._entities)
+		shuffle(ds1._entity_ids)
 		ds2 = copy.copy(self)
-		ds2._entities = self._entities[break_off:]
-		ds1._entities = self._entities[:break_off]
+		ds2._entity_ids = self._entity_ids[break_off:]
+		ds1._entity_ids = self._entity_ids[:break_off]
 		return ds1, ds2
 
 	def __iter__(self):
