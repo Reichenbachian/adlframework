@@ -176,6 +176,7 @@ class DataSource():
 
 		### Read from cache
 		if self.cache_location != -1 and self.cache.has(id_):
+			print('FROM CACHE!')
 			c_cont = self.cache_location
 			sample = self.cache.retrieve(id_)
 		else:

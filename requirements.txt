@@ -47,3 +47,4 @@ Theano==1.0.1
 tornado==4.5.2
 tqdm==4.19.5
 Werkzeug==0.13
+tables

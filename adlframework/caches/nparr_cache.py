@@ -7,7 +7,7 @@ class RegularNPArrCache(Cache):
 	'''
 	TO-DO: Written for 1-d. Generalize to N-D.
 	'''
-	def __init__(self, cache_file=None):
+	def __init__(self, cache_file=None, compress=True):
 		self.data = None
 		self.labels = None
 		self.id_to_index = {}
@@ -15,6 +15,7 @@ class RegularNPArrCache(Cache):
 		self.label_size = -1
 		self.c_index = 1 # Location of end of array
 		self.cache_file = cache_file
+		self.compress = compress
 		if cache_file is not None:
 			self.load()
 
@@ -69,8 +70,11 @@ class RegularNPArrCache(Cache):
 		'''
 		if self.cache_file != None:
 			self.crop_excess()
-			np.save(self.cache_file+'_data', self.data, allow_pickle=True, fix_imports=True)
-			np.save(self.cache_file+'_label', self.data, allow_pickle=True, fix_imports=True)
+			if self.compress:
+				np.savez_compressed(self.cache_file+'_joined', self.data, self.labels)
+			else:
+				np.save(self.cache_file+'_data', self.data, allow_pickle=True, fix_imports=True)
+				np.save(self.cache_file+'_label', self.labels, allow_pickle=True, fix_imports=True)
 			pickle.dump( self.id_to_index, open(self.cache_file+'_dict', "wb" ))
 
 	def load(self):
@@ -92,8 +96,8 @@ class RegularNPArrCache(Cache):
 
 	''' Extra Classes '''
 	def crop_excess(self):
-		self.data = self.data[:c_index]
-		self.labels = self.labels[:c_index]
+		self.data = self.data[:self.c_index]
+		self.labels = self.labels[:self.c_index]
 
 	def double_arr_size(self):
 		new_d_shape = tuple([val if i != 0 else val*2 for i, val in enumerate(self.data.shape)])
@@ -104,3 +108,51 @@ class RegularNPArrCache(Cache):
 		self.new_labels[:len(self.labels)] = self.labels
 		self.data = self.new_data
 		self.labels = self.new_labels
+
+class IrregularNPArrCache(Cache):
+	import tables
+	import string
+	import random
+	'''
+	TO-DO: Written for 1-d. Generalize to N-D.
+	Reference: https://kastnerkyle.github.io/posts/using-pytables-for-larger-than-ram-data-processing/
+	'''
+	def __init__(self, cache_file=None, compress=True):
+		self.data = []
+		self.labels = []
+		self.id_to_index = {}
+
+
+	''' Necessary classes '''
+	def has(self, id_):
+		'''
+		Checks if cached. In this format to maintain O(1) lookup.
+		'''
+		try:
+			self.data[id_]
+			return True
+		except:
+			return False
+
+	def cache(self, id_, data, label):
+		### Read into cache
+		self.data.append(data)
+		self.labels.append(label)
+		self.id_to_index[id_] = len(self.data) - 1
+
+	def retrieve(self, id_):
+		idx = self.id_to_index[id_]
+		return self.data[idx], self.labels[idx]
+
+
+	def save(self):
+		'''
+		Saves Object
+		'''
+		raise NotImplemented()
+
+	def load(self):
+		'''
+		Loads object
+		'''
+		raise NotImplemented()
