@@ -8,7 +8,7 @@ logger = get_logger()
 
 class PlanetDataEntity(DataEntity):
     
-    def __init__(self, pad="zeros", *args, **kwargs):):
+    def __init__(self, pad="zeros", *args, **kwargs):
         '''
         window_length is in indices
         '''
