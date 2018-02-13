@@ -12,7 +12,7 @@ from adlframework.experiment import SimpleExperiment
 ### Controllers
 from adlframework.controllers.general import reshape, make_categorical, to_np_arr
 ### Callbacks
-from adlframework.callbacks.image_callbacks import SaveValImages
+from adlframework.controllers.images import SaveValImages
 
 import pdb
 

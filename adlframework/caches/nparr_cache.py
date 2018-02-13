@@ -2,6 +2,9 @@ import numpy as np
 import pdb
 import pickle
 from adlframework.cache import Cache
+from adlframework.utils import get_logger
+
+logger = get_logger()
 
 class RegularNPArrCache(Cache):
 	'''
@@ -55,7 +58,7 @@ class RegularNPArrCache(Cache):
 				self.labels[self.c_index] = label
 				self.c_index += 1
 			except Exception as e:
-				pdb.set_trace()
+				logger.error(str(e))
 		self.id_to_index[id_] = len(self.data) - 1
 		return True
 

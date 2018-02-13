@@ -18,9 +18,9 @@ from keras.optimizers import Adadelta
 from keras.losses import categorical_crossentropy
 from adlframework.experiment import AdvancedExperiment
 # Controllers
-from adlframework.processors.general_processors import reshape, make_categorical
+from adlframework.controllers.general import reshape, make_categorical, to_np_arr
 # Callbacks
-from adlframework.callbacks.image_callbacks import SaveValImages
+from adlframework.controllers.images import SaveValImages
 
 import pdb
 
