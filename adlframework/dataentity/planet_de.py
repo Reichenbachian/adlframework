@@ -8,12 +8,11 @@ logger = get_logger()
 
 class PlanetDataEntity(DataEntity):
     
-    def __init__(self, unique_id, retrieval, window_length, pad="zeros"):
+    def __init__(self, pad="zeros", *args, **kwargs):):
         '''
         window_length is in indices
         '''
-        self.unique_id = unique_id
-        self.retrieval = retrieval
+        self.shape = kwargs.pop('window_length')
         self.label = pd.read_csv(retrieval.read_label(unique_id)).iloc[0]
 
     def _read_raw(self):

@@ -11,7 +11,7 @@ class MidiDataEntity(DataEntity):
     '''
     
     @suppress_warnings
-    def _read_file(self):
+    def _read_file(self, id_):
         """
         Receives a file path from retrieval and processes it into DataEntity.
         """
@@ -23,13 +23,11 @@ class MidiDataEntity(DataEntity):
         else:
             raise NotImplemented(str(self.backend)+' is not implemented as a backend')
 
-    def get_sample(self):
+    def get_sample(self, id_):
         '''
         Returns a midi sample
         '''
-        if self.labels is None: # Read labels into memory.
-            self.labels = self.retrieval.get_label(self.unique_id)
-        if self.data is None: # Read data into memory.
-            self.data = self.get_data()
-        return self.data, None if self.labels is None else self.labels.iloc[0]
+        labels = self.retrieval.get_label(id_)
+        data = self.get_data()
+        return data, None if labels is None else labels.iloc[0]
 
