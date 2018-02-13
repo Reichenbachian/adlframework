@@ -1,6 +1,9 @@
 '''
 Basic cache architecture
 '''
+from adlframework.utils import get_logger
+
+logger = get_logger()
 
 class Cache(object):
 	def __init__(self):
@@ -30,10 +33,10 @@ class Cache(object):
 		'''
 		Loads from a file/location
 		'''
-		raise NotImplemented('load is not implemented in %s.' % self.__class__)
+		logger.warning('load is not implemented in %s.' % self.__class__)
 
 	def save(self):
 		'''
 		Saves to a file/location
 		'''
-		raise NotImplemented('save is not implemented in %s.' % self.__class__)
+		logger.warning('save is not implemented in %s.' % self.__class__)

@@ -21,6 +21,7 @@ setup(name='adlframework',
               "adlframework.callbacks",
               "adlframework.filters",
               "adlframework.caches",
+              "adlframework.samplers",
 					],
       install_requires=reqs,
      )

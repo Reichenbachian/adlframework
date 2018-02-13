@@ -25,7 +25,7 @@ class RegularNPArrCache(Cache):
 		Checks if cached. In this format to maintain O(1) lookup.
 		'''
 		try:
-			self.data[id_]
+			self.id_to_index[id_]
 			return True
 		except:
 			return False
@@ -129,7 +129,7 @@ class IrregularNPArrCache(Cache):
 		Checks if cached. In this format to maintain O(1) lookup.
 		'''
 		try:
-			self.data[id_]
+			self.id_to_index[id_]
 			return True
 		except:
 			return False
@@ -144,15 +144,3 @@ class IrregularNPArrCache(Cache):
 		idx = self.id_to_index[id_]
 		return self.data[idx], self.labels[idx]
 
-
-	def save(self):
-		'''
-		Saves Object
-		'''
-		raise NotImplemented()
-
-	def load(self):
-		'''
-		Loads object
-		'''
-		raise NotImplemented()

@@ -65,6 +65,7 @@ class DataSource():
 		self.DE = DataEntity(retrieval, verbosity, **kwargs)
 
 		self.cache_location = self.initialize_cache_location()
+		assert not (self.cache_location == -1 and preload_memory), "No cache detected. Cannot preload memory."
 		self.initialize_retrieval(ignore_retrieval_cache)
 		self.__prefilter()
 		if preload_memory:
@@ -115,7 +116,7 @@ class DataSource():
 		shuffle(self._entity_ids)
 
 	def async_fill_queue(self):
-		while not self.sample_queue.full(): # Worst case: Very fast processor, very large queue. Then slow first load.
+		while True: # Worst case: Very fast processor, very large queue. Then slow first load.
 			self.entity_queue.put(self._entity_ids[self.list_pointer])
 			self.list_pointer += 1
 			if self.list_pointer >= len(self._entity_ids):
@@ -129,15 +130,14 @@ class DataSource():
 		while True:
 			try:
 				id_ = self.entity_queue.get()
-				sample = self.process_id(id_)
+				tmp = self.process_id(id_)
+				sample = sample if tmp == True else tmp
 				if sample: # If sample is processed and acceptable, append to queue
 					self.sample_queue.put(sample)
 			except Exception as e:
 				if self.verbosity == 3:
 					logger.error('Controller or sample Failure')
 					logger.error(e, exc_info=True)
-
-
 
 	def __prefilter(self):
 		'''
@@ -176,8 +176,7 @@ class DataSource():
 
 		### Read from cache
 		if self.cache_location != -1 and self.cache.has(id_):
-			print('FROM CACHE!')
-			c_cont = self.cache_location
+			c_cont = self.cache_location+1
 			sample = self.cache.retrieve(id_)
 		else:
 			sample = self.DE.get_sample(id_)
@@ -185,7 +184,7 @@ class DataSource():
 		### Processor
 		while c_cont < len(self.controllers):
 			# Cache if present
-			if c_cont == self.cache_location:				
+			if c_cont == self.cache_location:
 				self.cache.cache(id_, sample[0], sample[1])
 				if just_cache:
 					return

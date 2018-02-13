@@ -26,26 +26,20 @@ class AudioFileDataEntity(DataEntity):
     fs     - sampling rate of audio file
     '''
 
-    def __init__(self, **kwargs):
-        DataEntity.__init__(self, **kwargs)
-        self.fs = None
-        self.length = None
-
-    def get_sample(self):
+    def get_sample(self, id_):
         '''
         Should never be called
         '''
         raise Exception("AudioFileDataEntity is deprecated. Use AudioSegmentDataEntity or AudioRecordingDataEntity.")
     
-    def _read_file(self):
+    def _read_file(self, id_):
         '''
         Reads the raw data from the retrieval virtual or real file.
         Don't call these
         '''
-        f = self.retrieval.get_data(self.unique_id)
-        self.fs, self.data = wav.read(f)
-        self.length = len(self.data)/float(self.fs)
-        return self.data
+        f = self.retrieval.get_data(id_)
+        self.fs, data = wav.read(f)
+        return data
 
 class AudioSegmentDataEntity(AudioFileDataEntity):
     '''
@@ -54,16 +48,14 @@ class AudioSegmentDataEntity(AudioFileDataEntity):
     this segment possesses a single label.
     '''
 
-    def get_sample(self):
+    def get_sample(self, id_):
         '''
         Returns a sample
         '''
-        if self.labels is None: # Read labels into memory.
-            self.labels = self.retrieval.get_label(self.unique_id)
-        if self.data is None: # Read data into memory.
-            self.get_data()
+        labels = self.retrieval.get_label(id_)
+        data = self.get_data(id_)
 
-        return self.data, self.labels
+        return data, labels
         
 class AudioRecordingDataEntity(AudioFileDataEntity):
     '''
@@ -227,7 +219,7 @@ class AudioRecordingDataEntity(AudioFileDataEntity):
         Returns a sample
         '''
         if self.labels is None: # Read labels into memory.
-            self.labels = self.retrieval.get_label(self.unique_id)
+            self.labels = self.retrieval.get_label(id_)
             assert self.tc in self.labels.columns, "Please specify a timestamp column present in labels if using an AudioRecordingDataEntity"
         if self.data is None: # Read data into memory.
             self.get_data()
