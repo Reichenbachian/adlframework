@@ -1,7 +1,7 @@
-from adlframework.cache import Cache
 import numpy as np
 import pdb
 import pickle
+from adlframework.cache import Cache
 
 class RegularNPArrCache(Cache):
 	'''

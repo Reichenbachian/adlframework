@@ -19,7 +19,6 @@ def accept_label(sample, labelnames):
     """ Only accept samples which has the value of 1 for one or more of the given labelnames"""
     return threshold_label(sample, labelnames, 1)
 
-
 def threshold_label(sample, labelnames, threshold,
                     greater_than=True, keep_unpresent=False,
                     keep=True, equal_to=True):

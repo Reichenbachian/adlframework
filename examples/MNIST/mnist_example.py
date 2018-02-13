@@ -3,13 +3,14 @@ from functools import partial
 from adlframework.retrievals.MNIST import MNIST_retrieval
 from adlframework.datasource import DataSource
 from adlframework.dataentity.image_de import ImageFileDataEntity
+from adlframework.caches import RegularNPArrCache
 ### Model
 from mnist_classification_network import mnist_net
 from keras.optimizers import Adadelta
 from keras.losses import categorical_crossentropy
 from adlframework.experiment import SimpleExperiment
 ### Controllers
-from adlframework.processors.general_processors import reshape, make_categorical, to_np_arr
+from adlframework.controllers.general import reshape, make_categorical, to_np_arr
 ### Callbacks
 from adlframework.callbacks.image_callbacks import SaveValImages
 
@@ -18,7 +19,8 @@ import pdb
 
 ### Controllers
 controllers = [partial(reshape, shape=(28, 28, 1)),
-			  partial(make_categorical, num_classes=10)]
+			  partial(make_categorical, num_classes=10),
+			  RegularNPArrCache()]
 
 ### Load Data
 mnist_retrieval = MNIST_retrieval()

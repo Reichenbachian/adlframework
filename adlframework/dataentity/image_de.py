@@ -8,29 +8,23 @@ class ImageFileDataEntity(DataEntity):
     Represents a single image.
     '''
 
-    def _read_np(self):
+    def _read_np(self, id_):
         """
         Receives a numpy array from retrieval and processes it into DataEntity's
         format.
         """
-        if self.data is None:
-            self.data = self.retrieval.get_data(self.unique_id)
-        return self.data
+        return self.retrieval.get_data(id_)
 
-    def _read_file(self):
+    def _read_file(self, id_):
         """
         Receives a file path from retrieval and processes it into DataEntity.
         Recommended to call read_raw to prevent rudundancy.
         """
         raise NotImplemented('read_file is not implemented for ImageFileDataEntity')
 
-    def get_sample(self):
+    def get_sample(self, id_):
         '''
             Given a numpy array of returned sample, it returns a sample.
         '''
-        if self.labels is None: # Read labels into memory.
-            self.labels = self.retrieval.get_label(self.unique_id)
-        if self.data is None: # Read data into memory.
-            self.get_data()
-        return self.data, self.labels.iloc[0]
+        return self.get_data(id_), self.retrieval.get_label(id_)
         

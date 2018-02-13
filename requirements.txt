@@ -33,6 +33,7 @@ protobuf==3.5.1
 psutil
 pyparsing==2.2.0
 python-dateutil==2.6.1
+tables
 pytz==2017.3
 PyWavelets==0.5.2
 PyYAML==3.12

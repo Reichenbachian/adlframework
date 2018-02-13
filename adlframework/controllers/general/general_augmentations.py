@@ -22,7 +22,6 @@ def identity(de, tup):
     data, label = tup
     return data, label
 
-
 def add_linear_trend(de, tup, scale=3):
     """
     Adds a linear trend to a 1d piece of data.
@@ -41,7 +40,6 @@ def add_linear_trend(de, tup, scale=3):
     augmented = [z + m*x for z, x in zip(data, range(0, len(data)))]
     return augmented, label
 
-
 def offset(de, tup, max_offset_scale=1):
     """
     Adds an offset. max_offset_scale is as follows
@@ -51,7 +49,6 @@ def offset(de, tup, max_offset_scale=1):
     data, label = tup
     data += random.random()*np.std(data)*max_offset_scale
     return data, label
-
 
 def add_noise(de, tup, scale=0.2):
     """
@@ -65,7 +62,6 @@ def add_noise(de, tup, scale=0.2):
     # add noise
     data += np.random.normal(loc=0, scale=std*scale, size=data.shape)
     return data.astype('float64'), label
-
 
 def timeshift(de, tup, max_shift=.2):
     """
