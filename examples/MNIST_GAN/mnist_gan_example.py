@@ -72,7 +72,6 @@ def epoch():
 
     return {"dloss": np.mean(dloss), "gloss": np.mean(gloss)}
 
-
 # Create and run experiment
 exp = AdvancedExperiment(epoch=epoch,
                          network=net,
