@@ -1,6 +1,7 @@
 import numpy as np
 import pdb
 import pickle
+import os
 from adlframework.cache import Cache
 from adlframework.utils import get_logger
 
@@ -86,8 +87,6 @@ class RegularNPArrCache(Cache):
 		Currently, only saves data.
 		To-Do: save labels too.
 		'''
-		import pickle
-		import os
 		dtf = self.cache_file+'_data'
 		lf = self.cache_file+'_label'
 		df = self.cache_file+'_dict'
@@ -113,9 +112,6 @@ class RegularNPArrCache(Cache):
 		self.labels = self.new_labels
 
 class IrregularNPArrCache(Cache):
-	import tables
-	import string
-	import random
 	'''
 	TO-DO: Written for 1-d. Generalize to N-D.
 	Reference: https://kastnerkyle.github.io/posts/using-pytables-for-larger-than-ram-data-processing/
@@ -124,6 +120,7 @@ class IrregularNPArrCache(Cache):
 		self.data = []
 		self.labels = []
 		self.id_to_index = {}
+		self.cache_file = cache_file
 
 
 	''' Necessary classes '''
@@ -147,3 +144,23 @@ class IrregularNPArrCache(Cache):
 		idx = self.id_to_index[id_]
 		return self.data[idx], self.labels[idx]
 
+	def load(self):
+		'''
+		Reads data, labels, and id_to_index as tuple from pickle
+		'''
+		if self.cache_file != None:
+			if os.path.exists(self.cache_file):
+				with open(self.cache_file, "wb") as f:
+					self.data, self.labels, self.id_to_index = pickle.load(f)
+			else:
+				logger.warn('Cache file specified doesn\'t exist. Will continue...')
+
+	def save(self):
+		'''
+		Save data, labels, and id_to_index as tuple in pickle
+		'''
+		if self.cache_file != None:
+			with open(self.cache_file, "wb") as f:
+				pickle.dump((self.data, self.labels, self.id_to_index), f)
+		else:
+			logger.warn('No cache file specified. Will lose cache on exit.')
