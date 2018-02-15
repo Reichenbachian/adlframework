@@ -69,8 +69,9 @@ class DataSource():
 		self.initialize_retrieval(ignore_retrieval_cache)
 		self.__prefilter()
 		if preload_memory:
-			for id_ in tqdm(self._entity_ids, leave=False):
-				self.process_id(id_, just_cache=True)
+			process_wrap = lambda x: self.process_id(x, just_cache=True)
+			with Pool(workers) as p:
+      			tqdm.tqdm(p.imap(process_wrap, self._entity_ids), total=len(self._entity_ids))
 			self.cache.save()
 
 		if self.workers > 1:
