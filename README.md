@@ -28,7 +28,9 @@ controllers = [midi_to_np,
 	       partial(crop, shape=(105, 3)),
 	       partial(crop_and_label, num_rows=5),
 	       make_time_relative, # Makes the time column relative to previous time
-	       notes_to_classification]
+	       notes_to_classification,
+	       IrregularNPArrCache(cache_file='cache.pkl'),
+	       some_augmentation]
 
 ### Load Data
 base = '/Users/localhost/Desktop/Projects/Working/StudyMuse/local_cache/alex_midiset/v2/'
