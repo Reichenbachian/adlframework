@@ -1,4 +1,4 @@
-from retrieval import Retrieval
+from adlframework.retrievals.retrieval import Retrieval
 from sklearn.datasets import fetch_mldata
 import logging
 import pandas as pd

@@ -1,4 +1,4 @@
-from retrieval import Retrieval
+from adlframework.retrievals.retrieval import Retrieval
 import os
 
 class MySQL(Retrieval):
