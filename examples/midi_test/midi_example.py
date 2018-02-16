@@ -28,6 +28,7 @@ controllers = [ #partial(threshold_label, labelnames="num_instruments", threshol
 			 ]
 
 ### Load Data
+# BUG: alex_midiset is stored, I assume, on alex's machine. 
 base = '/Users/localhost/Desktop/Projects/Working/StudyMuse/local_cache/alex_midiset/v2/'
 midi_retrieval = BlobLocalCache(base+'midis/', base+'labels/')
 midi_ds = DataSource(midi_retrieval, MidiDataEntity,
