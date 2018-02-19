@@ -115,11 +115,11 @@ def remove_outliers(sample, threshold=3):
             data[i] = mean
     return data, label
 
-def smooth_guassian_processor(sample, k=2):
-    data, label = sample
-    assert len(data.shape) == 1, 'Please only give smooth_guassian_processor a one dimensional input.'
+def smooth_gaussian_processor(sample, k=2):
+    data = sample
+    assert len(np.shape(np.array(data))) == 1, 'Please only give smooth_gaussian_processor a one dimensional input.'
     smoothed = gaussian_filter1d(data, k)
-    return smoothed, label
+    return smoothed
 
 def amplitude_extractor(sample):
     """
