@@ -1,4 +1,4 @@
-from retrieval import Retrieval
+from adlframework.retrievals.retrieval import Retrieval
 import pandas as pd
 import numpy as np
 
@@ -43,4 +43,3 @@ class JsonFile(Retrieval):
 		Returns a list of unique string identifiers.
 		'''
 		return self.df.index
-		

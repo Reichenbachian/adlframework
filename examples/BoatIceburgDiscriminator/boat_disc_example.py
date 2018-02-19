@@ -23,7 +23,10 @@ from keras.callbacks import ModelCheckpoint
 from adlframework.callbacks.image_callbacks import SaveValImages
 
 abs_path = os.path.dirname(os.getcwd()+'/local_cache/')+'/'
+print(abs_path)
 
+# NOTE: assuming you are using the Statoil/C-CORE data, they current don't exist in the local_cache
+# on the user's end. 
 train_retrieval = JsonFile(fp=abs_path+'train.json',
                             data_columns=['band_1', 'band_2'],
                             label_columns=['is_iceberg'])

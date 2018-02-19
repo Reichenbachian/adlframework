@@ -3,7 +3,7 @@ from random import shuffle
 import numpy as np
 import copy
 from adlframework.utils import in_ipynb
-from datasource_union import DataSourceUnion
+from adlframework.datasource_union import DataSourceUnion
 import psutil
 from adlframework.utils import get_logger
 from adlframework.cache import Cache

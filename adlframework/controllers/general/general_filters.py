@@ -1,4 +1,5 @@
 import pdb
+import numpy as np
 ######################
 ####   FILTERS  ######
 ######################
@@ -8,8 +9,13 @@ def min_array_shape(sample, min_shape=None):
     If dimensions don't match up, returns false.
     '''
     data, _ = sample
-    return (len(min_shape) == len(data.shape)) and \
-    (all([min_shape[i] == None or data.shape[i] >= min_shape[i] for i in range(len(min_shape))]))
+    for i in range(len(min_shape)):
+        try:
+            if min_shape[i] > len(sample[i]):
+                return False
+        except IndexError:
+            return False
+    return True
 
 def ignore_label(sample, labelnames):
     """ Reject samples for which the value for any of labelnames is 1, accept otherwise"""
@@ -33,6 +39,7 @@ def threshold_label(sample, labelnames, threshold,
         the threshold value.
     """
     data, label = sample
+    print label
     if isinstance(labelnames, basestring):
         labelnames = [labelnames]
     for labelname in labelnames:

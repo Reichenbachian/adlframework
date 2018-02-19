@@ -25,7 +25,7 @@ from adlframework.controllers.images import SaveValImages
 import pdb
 
 # Consts
-batch_size = 100
+batch_size = 25
 ds_vars = {'batch_size': batch_size}
 randomDim = 100
 
