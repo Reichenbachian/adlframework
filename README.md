@@ -1,5 +1,5 @@
-# ADLFramework
-An open-source deep learning framework
+# ADLFramework (Another Deep Learning Framework)
+An open-source ML data manipulation framework
 
 ADLFramework can currently take data from multiple retrieval types(Local File Systems, mysql databases, Json files), processes them through a series of controllers, and serves them in a simple python iterator.
 
