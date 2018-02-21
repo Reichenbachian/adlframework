@@ -215,7 +215,10 @@ class DataSource():
 		batch = []
 		while len(batch) < batch_size: # Create a batch
 			if self.workers == 1:
-				id_ = self._entity_ids[self.list_pointer] # Grab next entity
+				try:
+					id_ = self._entity_ids[self.list_pointer] # Grab next entity
+				except:
+					pdb.set_trace()
 				try:
 					sample = self.process_id(id_)
 					if sample: # Only add to batch if it passes all per sample filters
