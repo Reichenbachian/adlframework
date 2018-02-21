@@ -28,7 +28,7 @@ class DataSource():
 	 Multiprocessing
 	 -------------------
 	 - 'workers': number of asyncronous workers to fetch and process data. Does not apply to
-	 			  prefiltering.
+				  prefiltering.
 	 - 'queue_size': Number of samples the workers should prefetch.
 
 	Attributes
@@ -71,7 +71,7 @@ class DataSource():
 		if preload_memory:
 			process_wrap = lambda x: self.process_id(x, just_cache=True)
 			with Pool(workers) as p:
-      			tqdm.tqdm(p.imap(process_wrap, self._entity_ids), total=len(self._entity_ids))
+				tqdm.tqdm(p.imap(process_wrap, self._entity_ids), total=len(self._entity_ids))
 			self.cache.save()
 
 		if self.workers > 1:
