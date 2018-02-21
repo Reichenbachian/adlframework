@@ -253,6 +253,7 @@ class DataSource():
 		break_off = int(len(self._entity_ids)*split_percent)
 		### To-Do: Fix below inefficiency
 		ds1 = copy.copy(self)
+		ds1.list_pointer = 0
 		shuffle(ds1._entity_ids)
 		ds2 = copy.copy(self)
 		ds2._entity_ids = self._entity_ids[break_off:]

@@ -16,6 +16,13 @@ class Cache(object):
 		'''
 		raise NotImplemented('has is not implemented in %s.' % self.__class__)
 
+	def delete(self, id_):
+		'''
+		Checks if the id has been cached.
+		Returns: True/False
+		'''
+		raise NotImplemented('delete is not implemented in %s.' % self.__class__)
+
 	def cache(self, id_, data, label):
 		'''
 		Caches an id_ with its corresponding data and label.
