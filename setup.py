@@ -28,6 +28,6 @@ setup(name='adlframework',
               "adlframework.controllers.lstm",
               "adlframework.controllers.midis",					],
       install_requires=reqs,
-      keywords = ['deep learning', 'data framework', 'data', 'data manipulation', 'data augmentation']
+      keywords = ['deep learning', 'data framework', 'data', 'data manipulation', 'data augmentation'],
       download_url = 'https://github.com/Reichenbachian/adlframework/archive/0.1.tar.gz',     
 )
