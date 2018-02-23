@@ -219,10 +219,7 @@ class DataSource():
 		batch = []
 		while len(batch) < batch_size: # Create a batch
 			if self.workers == 1:
-				try:
-					id_ = self._entity_ids[self.list_pointer] # Grab next entity
-				except:
-					pdb.set_trace()
+				id_ = self._entity_ids[self.list_pointer] # Grab next entity
 				try:
 					sample = self.process_id(id_)
 					if sample: # Only add to batch if it passes all per sample filters
@@ -263,8 +260,9 @@ class DataSource():
 		ds1.list_pointer = 0
 		shuffle(ds1._entity_ids)
 		ds2 = copy.copy(self)
-		ds2._entity_ids = self._entity_ids[break_off:]
-		ds1._entity_ids = self._entity_ids[:break_off]
+		ds1._entity_ids = self._entity_ids[break_off:]
+		ds2._entity_ids = self._entity_ids[:break_off]
+		assert len(ds2._entity_ids) > 0 and len(ds1._entity_ids) > 0, 'Error in split. Cannot allocate empty datasource.'
 		return ds1, ds2
 
 	def __iter__(self):
