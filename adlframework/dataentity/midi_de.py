@@ -15,7 +15,7 @@ class MidiDataEntity(DataEntity):
         """
         Receives a file path from retrieval and processes it into DataEntity.
         """
-        f = self.retrieval.get_data(self.unique_id)
+        f = self.retrieval.get_data(id_)
         if self.backend == 'default':
             return converter.parse(f)
         elif self.backend == 'madmom':
