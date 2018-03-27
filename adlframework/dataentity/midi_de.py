@@ -28,6 +28,6 @@ class MidiDataEntity(DataEntity):
         Returns a midi sample
         '''
         labels = self.retrieval.get_label(id_)
-        data = self.get_data()
+        data = self.get_data(id_)
         return data, None if labels is None else labels.iloc[0]
 
