@@ -71,11 +71,12 @@ class DataSource():
 		if preload_memory:
 			process_wrap = lambda x: self.process_id(x, just_cache=True)
 			if workers != 1:
-                                from multiprocessing import Pool
+				# To-Do: Make use same worker threads as later?
+                from multiprocessing import Pool
 				with Pool(workers) as p:
-					tqdm(p.imap(process_wrap, self._entity_ids), total=len(self._entity_ids))
+					p.imap(process_wrap, tqdm(self._entity_ids, total=len(self._entity_ids))
 			else:
-				tqdm(map(process_wrap, self._entity_ids), total=len(self._entity_ids))
+				map(process_wrap, tqdm(self._entity_ids, total=len(self._entity_ids))
 			self.cache.save()
 
 		if self.workers > 1:
