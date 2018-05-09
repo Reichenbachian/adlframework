@@ -72,7 +72,7 @@ class DataSource():
 			process_wrap = lambda x: self.process_id(x, just_cache=True)
 			if workers != 1:
 				# To-Do: Make use same worker threads as later?
-                from multiprocessing import Pool
+				from multiprocessing import Pool
 				with Pool(workers) as p:
 					p.imap(process_wrap, tqdm(self._entity_ids, total=len(self._entity_ids))
 			else:
@@ -91,7 +91,7 @@ class DataSource():
 		Finds cache in controllers, if present.
 		'''
 		cache_locations = [issubclass(x.__class__, Cache) for x in self.controllers]
-		assert sum(cache_locations) <= 1, "There should only be one cache object in controllers."     
+		assert sum(cache_locations) <= 1, "There should only be one cache object in controllers."
 		try:
 			cache_index = cache_locations.index(True)
 		except ValueError:
@@ -100,6 +100,9 @@ class DataSource():
 		return cache_index
 
 	def initialize_multiprocessing(self, queue_size):
+		'''
+		Starts the multiprocessing queue and threads.
+		'''
 		from multiprocessing import Process, Queue
 		self.entity_queue = Queue(queue_size) # Stores entites. Not list indices.
 		self.sample_queue = Queue(queue_size)
