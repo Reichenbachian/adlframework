@@ -39,7 +39,7 @@ def notes_to_classification(sample):
 	duration = [np.argmin(np.abs(possible_durations - x[2])) for x in data]
 	onsets = [np.argmin(np.abs(possible_onsets - x[0])) for x in data]
 	notes = [min(int(x[1]), 87) for x in data]
-	data = np.stack([duration, onsets, notes], axis=1)
+	data = np.stack([onsets, notes, duration], axis=1)
 	return data, label
 
 def convert_to_matrix(sample):
