@@ -20,11 +20,11 @@ def midi_to_np(sample, targets=[], reverse=None):
 
 chro = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b']
 chromatic = [chro[x%len(chro)]+str(x//len(chro)) for x in range(88)]
-i_to_note = {0: "Whole",1: "Half",2: "Quarter",3: "Eighth",4: "Sixteenth",5: "Third",6: "Sixth",7: "Seventh",8: "Dotted Whole",9: "Dotted Half",10: "Dotted Quarter",11: "Chord"}
-possible_durations = [4, 2, 1, .5, .25, 1/3.0, 2/3.0, 4/7.0, 6, 3, 1.25]
-possible_onsets = possible_durations + [0]
-possible_durations, possible_onsets = np.array(possible_durations), np.array(possible_onsets)
-def notes_to_classification(sample):
+# i_to_note = {0: "Whole",1: "Half",2: "Quarter",3: "Eighth",4: "Sixteenth",5: "Third",6: "Sixth",7: "Seventh",8: "Dotted Whole",9: "Dotted Half",10: "Dotted Quarter",11: "Chord"}
+# possible_durations = [4, 2, 1, .5, .25, 1/3.0, 2/3.0, 4/7.0, 6, 3, 1.25]
+# possible_onsets = possible_durations + [0]
+# possible_durations, possible_onsets = np.array(possible_durations), np.array(possible_onsets)
+def notes_to_classification(sample, possible_durations=[4, 2, 1, .5, .25, 1/3.0, 2/3.0, 4/7.0, 6, 3, 1.25]):
 	'''
 	Converts continuous onset and duration times to the nearest note value.
 	Also converts notes to chromatic names.
@@ -32,12 +32,11 @@ def notes_to_classification(sample):
 	Use for classification.
 	'''
 	num_notes = 88
-	num_note_types = 11
-
+	num_note_types = len(possible_durations)
 	data, label = sample
 	#### Once for data
 	duration = [np.argmin(np.abs(possible_durations - x[2])) for x in data]
-	onsets = [np.argmin(np.abs(possible_onsets - x[0])) for x in data]
+	onsets = [np.argmin(np.abs(possible_durations - x[0])) for x in data]
 	notes = [min(int(x[1]), 87) for x in data]
 	data = np.stack([onsets, notes, duration], axis=1)
 	return data, label

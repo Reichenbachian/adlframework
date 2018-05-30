@@ -57,6 +57,7 @@ class DataSource():
 		self.controllers = controllers
 		self.prefilters = prefilters
 		self._entity_ids = []
+		self.processes = []
 		self.batch_size = batch_size
 		self.list_pointer = 0
 		self.timeout = timeout
@@ -70,13 +71,13 @@ class DataSource():
 		self.__prefilter()
 		if preload_memory:
 			process_wrap = lambda x: self.process_id(x, just_cache=True)
-			if workers != 1:
-				# To-Do: Make use same worker threads as later?
-				from multiprocessing import Pool
-				with Pool(workers) as p:
-					p.imap(process_wrap, tqdm(self._entity_ids, total=len(self._entity_ids))
+			if workers == 1:
+				map(process_wrap, tqdm(self._entity_ids, total=len(self._entity_ids)))
 			else:
-				map(process_wrap, tqdm(self._entity_ids, total=len(self._entity_ids))
+				from multiprocessing import Pool
+				p = Pool(workers)
+				p.imap(process_wrap, tqdm(self._entity_ids, total=len(self._entity_ids)))
+				p.close()
 			self.cache.save()
 
 		if self.workers > 1:
@@ -96,7 +97,15 @@ class DataSource():
 			cache_index = cache_locations.index(True)
 		except ValueError:
 			return -1
-		self.cache = self.controllers[cache_index]
+                self.cache = self.controllers[cache_index]
+#		To-Do: Make caching in shared multiprocessing numpy array
+#		if self.workers > 1:
+#			from multiprocessing import Manager
+#                	from multiprocessing.managers import BaseManager
+#			BaseManager.register('Cache', type(self.cache))
+#                        manager = BaseManager()
+#                        manager.start()
+#                        self.cache = manager.Cache()
 		return cache_index
 
 	def initialize_multiprocessing(self, queue_size):
@@ -108,7 +117,16 @@ class DataSource():
 		self.sample_queue = Queue(queue_size)
 		Process(target=self.async_fill_queue).start()
 		for _ in range(self.workers):
-			Process(target=self.async_add_to_sample_queue).start()
+			p = Process(target=self.async_add_to_sample_queue)
+			p.start()
+			self.processes.append(p)
+
+	def kill_multiprocessing(self):
+		'''
+		Kill all the multiprocessing threads
+		'''
+		for p in self.processes:
+			p.terminate()
 
 	def initialize_retrieval(self, ignore_retrieval_cache):
 		#### RETRIEVAL INITIALIZATION

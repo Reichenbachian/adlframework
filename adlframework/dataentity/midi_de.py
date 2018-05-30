@@ -2,6 +2,7 @@ from adlframework._dataentity import DataEntity
 from madmom.utils.midi import MIDIFile
 from madmom.utils import suppress_warnings
 from adlframework.utils import get_logger
+from music21 import converter
 
 logger = get_logger()
 
