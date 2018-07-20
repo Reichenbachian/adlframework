@@ -39,11 +39,11 @@ class BlobLocalCache(Retrieval):
 		'''
 		return self.data_dir+id_
 
-	def get_label(self, id_):
+	def get_label(self, id_, suffix='.csv'):
 		'''
 		Returns a file path.
 		'''
-		return pd.read_csv(self.label_dir+id_[:id_.rfind('.')]+'.csv')
+		return pd.read_csv(self.label_dir+id_[:id_.rfind('.')]+suffix)
 
 	def list(self):
 		'''
