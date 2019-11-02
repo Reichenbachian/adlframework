@@ -48,4 +48,4 @@ tensorflow==1.2.1
 Theano==1.0.1
 tornado==4.5.2
 tqdm==4.19.5
-Werkzeug==0.13
+Werkzeug==0.15.3
