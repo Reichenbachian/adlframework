@@ -3,7 +3,7 @@ attrs==17.2.0
 Augmentor==0.1.10
 backports-abc==0.5
 backports.weakref==1.0rc1
-bleach==1.5.0
+bleach==3.1.1
 boto==2.48.0
 certifi==2017.11.5
 config==0.3.9
